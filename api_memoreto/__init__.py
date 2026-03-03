@@ -91,7 +91,7 @@ def create_app(test_config=None):
 
 
     # --- ENDPOINT 5: Actualizar puntaje PUT ---
-    @app.route("/puntaje/<id>", methods=["PUT"])
+    @app.route("/puntajes/<id>", methods=["PUT"]) 
     def actualizar_puntaje(id): # Recibe el id del puntaje desde la URL
         data = request.get_json() # Obtiene los datos que se enviaron en formato JSON desde el cliente
         return {
