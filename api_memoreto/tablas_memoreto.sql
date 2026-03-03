@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS Usuario;
 
 -- 1. Tabla de Usuarios
 CREATE TABLE Usuario (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
     correo TEXT UNIQUE NOT NULL, 
     password TEXT NOT NULL,      
     rol TEXT NOT NULL
@@ -13,14 +13,14 @@ CREATE TABLE Usuario (
 
 -- 2. Tabla del catálogo de niveles 
 CREATE TABLE Niveles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
     nombre_nivel TEXT NOT NULL,
     descripcion TEXT NOT NULL
 );
 
 -- 3. Tabla de Progreso 
 CREATE TABLE Progreso (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_usuario INTEGER NOT NULL,
     id_nivelActual INTEGER NOT NULL,
     avance INTEGER DEFAULT 0,
@@ -31,7 +31,7 @@ CREATE TABLE Progreso (
 
 -- 4. Tabla de Intentos / Puntajes (Fusionada con los requerimientos del reto)
 CREATE TABLE Intentos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_usuario INTEGER NOT NULL,
     id_nivel INTEGER NOT NULL,
     id_reto INTEGER NOT NULL,          -- Requerido por su Endpoint 2 y 4
