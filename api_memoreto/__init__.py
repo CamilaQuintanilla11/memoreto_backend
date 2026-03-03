@@ -57,7 +57,7 @@ def create_app(test_config=None):
 
 
     # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---    
-    @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET'])
+    @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre endpoint
     def consultar_puntajes_usuario(id_usuario):
         return {"success": True,  
         "id_usuario": id_usuario,
