@@ -40,8 +40,8 @@ def create_app(test_config=None):
         return {"valido": True, "id_usuario": 10, "rol": "estudiante"}
     
     # --- ENDPOINT 2: Crear puntaje POST ---
-    @app.route("/crearpuntaje", methods=['POST'])
-    def crear_puntaje():
+    @app.route("/puntaje", methods=['POST']) # nombre corregido 
+    def crear_puntaje(): 
         return {"success": True,  
         "id_usuario" : 10,
         "id_reto": 1,
