@@ -102,7 +102,7 @@ def create_app(test_config=None):
     
 
     # --- ENDPOINT 6: Eliminar puntaje DELETE ---
-    @app.route("/eliminarpuntaje/<id>", methods=["DELETE"])
+    @app.route("/puntajes/<id>", methods=["DELETE"])
     def eliminar_puntaje(id): # Recibe el id del puntaje desde la URL
         return {
             "mensaje": "Puntaje eliminado correctamente",
