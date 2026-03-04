@@ -6,9 +6,8 @@ DROP TABLE IF EXISTS Usuario;
 -- 1. Tabla de Usuarios
 CREATE TABLE Usuario (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    correo TEXT UNIQUE NOT NULL, 
-    password TEXT NOT NULL,      
-    rol TEXT NOT NULL
+    name TEXT NOT NULL,
+    token TEXT UNIQUE NOT NULL, 
 );
 
 -- 2. Tabla del catálogo de niveles 
@@ -18,19 +17,8 @@ CREATE TABLE Niveles (
     descripcion TEXT NOT NULL
 );
 
--- 3. Tabla de Session 
+-- 3. Tabla de Session / Puntajes (Fusionada con los requerimientos del reto)
 CREATE TABLE Session (
-    id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    score INTEGER NOT NULL,
-    id_usuario INTEGER NOT NULL,
-    id_nivelActual INTEGER NOT NULL,
-    ultima_fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
-    FOREIGN KEY (id_nivelActual) REFERENCES Niveles(id)
-);
-
--- 4. Tabla de Intentos / Puntajes (Fusionada con los requerimientos del reto)
-CREATE TABLE Intentos (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_usuario INTEGER NOT NULL,
     id_nivel INTEGER NOT NULL,
