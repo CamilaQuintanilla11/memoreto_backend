@@ -8,6 +8,7 @@ CREATE TABLE Usuario (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     name TEXT NOT NULL,
     token TEXT UNIQUE NOT NULL, 
+    rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
 );
 
 -- 2. Tabla del catálogo de niveles 
@@ -16,12 +17,18 @@ CREATE TABLE Niveles (
     nombre_nivel TEXT NOT NULL,
     descripcion TEXT NOT NULL
 );
+CREATE TABLE Memoretos {
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    id_nivel INTEGER NOT NULL,
+    nombre_memoreto TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
+    FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
+}
 
 -- 3. Tabla de Session / Puntajes (Fusionada con los requerimientos del reto)
 CREATE TABLE Session (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_usuario INTEGER NOT NULL,
-    id_nivel INTEGER NOT NULL,
     id_reto INTEGER NOT NULL,          -- Requerido por su Endpoint 2 y 4
     score INTEGER NOT NULL,            -- El puntaje final
     tiempo_segundos INTEGER NOT NULL,  -- Requerido por el RF-12 y su Endpoint 2
