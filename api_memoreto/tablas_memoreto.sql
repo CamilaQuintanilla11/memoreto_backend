@@ -18,12 +18,12 @@ CREATE TABLE Niveles (
     descripcion TEXT NOT NULL
 );
 
--- 3. Tabla de Progreso 
-CREATE TABLE Progreso (
+-- 3. Tabla de Session 
+CREATE TABLE Session (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    score INTEGER NOT NULL,
     id_usuario INTEGER NOT NULL,
     id_nivelActual INTEGER NOT NULL,
-    avance INTEGER DEFAULT 0,
     ultima_fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
     FOREIGN KEY (id_nivelActual) REFERENCES Niveles(id)
