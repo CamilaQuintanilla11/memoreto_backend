@@ -17,6 +17,7 @@ CREATE TABLE Niveles (
     nombre_nivel TEXT NOT NULL,
     descripcion TEXT NOT NULL
 );
+
 CREATE TABLE Memoretos {
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_nivel INTEGER NOT NULL,
