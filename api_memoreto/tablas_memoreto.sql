@@ -11,18 +11,14 @@ CREATE TABLE Usuario (
     rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
 );
 
--- 2. Tabla del catálogo de niveles 
-CREATE TABLE Niveles (
-    id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    nombre_nivel TEXT NOT NULL,
-    descripcion TEXT NOT NULL
-);
 
 CREATE TABLE Memoretos {
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_nivel INTEGER NOT NULL,
     nombre_memoreto TEXT NOT NULL,
     descripcion TEXT NOT NULL,
+    figuras INTEGER [] NOT NULL,
+    intersecciones INTEGER [] NOT NULL,
     FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
 }
 
