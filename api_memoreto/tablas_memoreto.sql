@@ -14,12 +14,11 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Memoretos {
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    id_nivel INTEGER NOT NULL,
+    nivel_dificultad INTEGER NOT NULL,
     nombre_memoreto TEXT NOT NULL,
     descripcion TEXT NOT NULL,
     figuras INTEGER [] NOT NULL,
     intersecciones INTEGER [] NOT NULL,
-    FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
 }
 
 -- 3. Tabla de Session / Puntajes (Fusionada con los requerimientos del reto)
