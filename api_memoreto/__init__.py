@@ -57,7 +57,7 @@ def create_app(test_config=None):
 
 
     # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---    
-    @app.route("/usuario/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre ruta
+    @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre ruta
     def consultar_puntajes_usuario(id_usuario):
 
         limit = request.args.get("limit", default=20, type=int)
