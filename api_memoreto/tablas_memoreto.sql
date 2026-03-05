@@ -3,7 +3,6 @@ DROP TABLE IF EXISTS Intentos;
 DROP TABLE IF EXISTS Niveles;
 DROP TABLE IF EXISTS Usuario;
 
--- 1. Tabla de Usuarios
 CREATE TABLE Usuario (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     name TEXT NOT NULL,
@@ -21,7 +20,6 @@ CREATE TABLE Memoretos {
     intersecciones INTEGER [] NOT NULL,
 }
 
--- 3. Tabla de Session / Puntajes (Fusionada con los requerimientos del reto)
 CREATE TABLE Session (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     id_usuario INTEGER NOT NULL,
