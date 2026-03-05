@@ -32,3 +32,11 @@ CREATE TABLE Session (
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
     FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
 );
+CREATE TABLE Session_has_memoreto (
+    id_session INTEGER NOT NULL,
+    id_memoreto INTEGER NOT NULL,
+    score INTEGER NOT NULL,            -- El puntaje obtenido en este memoreto específico
+    PRIMARY KEY (id_session, id_memoreto),
+    FOREIGN KEY (id_session) REFERENCES Session(id),
+    FOREIGN KEY (id_memoreto) REFERENCES Memoretos(id)
+);
