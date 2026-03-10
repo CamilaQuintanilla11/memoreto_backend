@@ -26,12 +26,11 @@ def create_app(test_config=None):
     @app.route("/docs/validausuario", methods=['GET'])
     def docs_valida_usuario():
         return {
-            "nombre": "Validación de usuario",
-            "descripcion": "Este servicio permite validar si un usuario estudiante o docente ya ha sido registrado previamente y sus credenciales son correctas.",
-            "url": "/validausuario",
-            "metodo_http": "POST",
-            "parametros_entrada": {"usuario": "alumnoabc@tec.mx", "pass": "12345678"},
-            "parametros_salida": {"valido": True, "id_usuario": 10, "rol": "estudiante"}
+            "usuario": "alumnoabc@tec.mx", 
+            "pass": "12345678",
+            "valido": True, 
+            "id_usuario": 10, 
+            "rol": "estudiante"
         }
 
     # ---  Funcionalidad de validación de usuario POST ---
