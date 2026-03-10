@@ -6,6 +6,7 @@ from markupsafe import escape #Evitar inyecciones de código en las rutas
 def create_app(test_config=None):
     # Inicializacion de la aplicacion Flask
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app) # Habilitar CORS para permitir solicitudes desde el frontend
     app.config.from_mapping(
         # a default secret that should be overridden by instance config
         SECRET_KEY="dev",
