@@ -9,14 +9,14 @@ CREATE TABLE Usuario (
     token TEXT UNIQUE NOT NULL, 
     rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
 );
-CREATE TABLE Memoretos {
+CREATE TABLE Memoretos (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     nivel_dificultad INTEGER NOT NULL,
     nombre_memoreto TEXT NOT NULL,
     descripcion TEXT NOT NULL,
     figuras INTEGER [] NOT NULL,
     intersecciones INTEGER [] NOT NULL,
-}
+)
 CREATE TABLE Niveles (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     nombre_nivel TEXT NOT NULL,
@@ -42,3 +42,31 @@ CREATE TABLE Session_has_memoreto (
     FOREIGN KEY (id_session) REFERENCES Session(id),
     FOREIGN KEY (id_memoreto) REFERENCES Memoretos(id)
 );
+-- Datos de prueba para Usuario
+INSERT INTO Usuario (name, token, rol) VALUES 
+('Aldo', 'token_aldo_1', 'estudiante'),
+('Maria', 'token_maria_2', 'estudiante'),
+('Profe Juan', 'token_profe_1', 'maestro');
+
+-- Datos de prueba para Niveles
+INSERT INTO Niveles (nombre_nivel, dificultad) VALUES 
+('Nivel Basico', 1),
+('Nivel Intermedio', 2);
+
+-- Datos de prueba para Memoretos
+-- Nota: SQLite no soporta arrays nativos, así que se guardan como texto (ej. '[1,2]')
+INSERT INTO Memoretos (nivel_dificultad, nombre_memoreto, descripcion, figuras, intersecciones) VALUES 
+(1, 'Memoreto 1', 'Dificultad baja', '[1,2]', '[0]'),
+(2, 'Memoreto 2', 'Dificultad media', '[3,4]', '[1,2]');
+
+-- Datos de prueba para Session (Simulando partidas jugadas)
+INSERT INTO Session (id_usuario, id_nivel, score, tiempo_segundos, aciertos, errores) VALUES 
+(1, 1, 850, 120, 10, 2),
+(2, 1, 900, 95, 12, 0),
+(1, 2, 600, 200, 8, 5);
+
+-- Datos de prueba para Session_has_memoreto
+INSERT INTO Session_has_memoreto (id_session, id_memoreto, score) VALUES 
+(1, 1, 850),
+(2, 1, 900),
+(3, 2, 600);
