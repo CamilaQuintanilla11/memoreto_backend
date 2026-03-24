@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from flask_cors import CORS 
 from flask import Flask, request
 from markupsafe import escape #Evitar inyecciones de código en las rutas
@@ -111,6 +112,37 @@ def create_app(test_config=None):
         return {
             "mensaje": "Puntaje eliminado correctamente",
             "id": id # y devuelve un mensaje confirmando que el registro fue eliminado
+        }
+
+    # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
+    @app.route("/api/graficas", methods=['GET'])
+    def obtener_datos_graficas():
+        # Conectar a la base de datos (busca el archivo en esta misma carpeta)
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Consulta SQL: Promedio de tiempo y puntaje por cada nivel
+        query = """
+            SELECT n.nombre_nivel, AVG(s.tiempo_segundos) as prom_tiempo, AVG(s.score) as prom_score
+            FROM Session s
+            JOIN Niveles n ON s.id_nivel = n.id
+            GROUP BY n.nombre_nivel
+        """
+        cursor.execute(query)
+        resultados = cursor.fetchall()
+        conn.close()
+        
+        # Separar los resultados en listas para mandarlos a la web
+        niveles = [fila[0] for fila in resultados]
+        tiempos = [fila[1] for fila in resultados]
+        scores = [fila[2] for fila in resultados]
+        
+        return {
+            "success": True,
+            "niveles": niveles,
+            "tiempos": tiempos,
+            "scores": scores
         }
 
     return app
