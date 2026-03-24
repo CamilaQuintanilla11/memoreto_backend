@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Memoreto</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        pre { background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .graficas-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .grafica { flex: 1; min-width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Memoreto</h1>
+    
+    <div class="card">
+        <h3>Prueba de API</h3>
+        <p>Haz clic para obtener la documentación de validación desde la API:</p>
+        <button onclick="llamarAPI()">Consultar API</button>
+        <pre id="resultado">Los datos aparecerán aquí...</pre>
+    </div>
+
+    <div class="card">
+        <h3>Resumen de Rendimiento (Alumnos)</h3>
+        <div class="graficas-container">
+            <div id="grafica-tiempo" class="grafica"></div>
+            <div id="grafica-score" class="grafica"></div>
+        </div>
+    </div>
+
+    <script>
+        // Función original de validación
+        async function llamarAPI() {
+            const resDiv = document.getElementById('resultado');
+            resDiv.innerText = "Cargando...";
+            try {
+                const response = await fetch('https://memoreto.aldo1207.uber.space/docs/validausuario');
+                const data = await response.json();
+                resDiv.innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resDiv.innerText = "Error al conectar con la API: " + error;
+            }
+        }
+
+        // Función nueva para Plotly
+        async function cargarGraficas() {
+            try {
+                const response = await fetch('https://memoreto.aldo1207.uber.space/api/graficas');
+                const data = await response.json();
+
+                if(data.success) {
+                    // Gráfica 1: Tiempo Promedio
+                    const trace1 = {
+                        x: data.niveles,
+                        y: data.tiempos,
+                        type: 'bar',
+                        marker: { color: '#ff7f0e' }
+                    };
+                    const layout1 = { title: 'Tiempo Promedio por Nivel (segundos)' };
+                    Plotly.newPlot('grafica-tiempo', [trace1], layout1);
+
+                    // Gráfica 2: Puntaje Promedio
+                    const trace2 = {
+                        x: data.niveles,
+                        y: data.scores,
+                        type: 'bar',
+                        marker: { color: '#1f77b4' }
+                    };
+                    const layout2 = { title: 'Puntaje Promedio por Nivel' };
+                    Plotly.newPlot('grafica-score', [trace2], layout2);
+                }
+            } catch (error) {
+                console.error("Error al cargar gráficas:", error);
+            }
+        }
+
+        // Cargar las gráficas automáticamente al abrir la página
+        cargarGraficas();
+    </script>
+</body>
+</html>
