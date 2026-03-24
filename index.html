@@ -9,8 +9,10 @@
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         pre { background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
         button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-        .graficas-container { display: flex; gap: 20px; flex-wrap: wrap; }
-        .grafica { flex: 1; min-width: 300px; }
+        .graficas-container { display: flex; gap: 40px; flex-wrap: wrap; }
+        .grafica-box { flex: 1; min-width: 300px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+        .autor { font-weight: bold; color: #333; margin-top: 10px; }
+        .descripcion { font-size: 0.9em; color: #666; }
     </style>
 </head>
 <body>
@@ -26,13 +28,23 @@
     <div class="card">
         <h3>Resumen de Rendimiento (Alumnos)</h3>
         <div class="graficas-container">
-            <div id="grafica-tiempo" class="grafica"></div>
-            <div id="grafica-score" class="grafica"></div>
+            
+            <div class="grafica-box">
+                <div id="grafica-tiempo"></div>
+                <p class="autor">Autor: Aldo</p>
+                <p class="descripcion">Esta gráfica de pastel muestra la distribución porcentual del tiempo promedio (en segundos) que los alumnos invierten en completar cada nivel de dificultad del memoreto.</p>
+            </div>
+
+            <div class="grafica-box">
+                <div id="grafica-score"></div>
+                <p class="autor">Autor: Ariel</p>
+                <p class="descripcion">Esta gráfica de barras compara el puntaje promedio obtenido por los estudiantes, evidenciando el rendimiento general según el nivel de dificultad.</p>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // Función original de validación
         async function llamarAPI() {
             const resDiv = document.getElementById('resultado');
             resDiv.innerText = "Cargando...";
@@ -45,24 +57,23 @@
             }
         }
 
-        // Función nueva para Plotly
         async function cargarGraficas() {
             try {
                 const response = await fetch('https://memoreto.aldo1207.uber.space/api/graficas');
                 const data = await response.json();
 
                 if(data.success) {
-                    // Gráfica 1: Tiempo Promedio
+                    // Gráfica 1: Tiempo Promedio (Pie Chart - Plotly usa labels y values)
                     const trace1 = {
-                        x: data.niveles,
-                        y: data.tiempos,
-                        type: 'bar',
-                        marker: { color: '#ff7f0e' }
+                        labels: data.niveles,
+                        values: data.tiempos,
+                        type: 'pie',
+                        marker: { colors: ['#ff9900', '#3366cc'] }
                     };
                     const layout1 = { title: 'Tiempo Promedio por Nivel (segundos)' };
                     Plotly.newPlot('grafica-tiempo', [trace1], layout1);
 
-                    // Gráfica 2: Puntaje Promedio
+                    // Gráfica 2: Puntaje Promedio (Bar Chart)
                     const trace2 = {
                         x: data.niveles,
                         y: data.scores,
@@ -77,7 +88,6 @@
             }
         }
 
-        // Cargar las gráficas automáticamente al abrir la página
         cargarGraficas();
     </script>
 </body>
