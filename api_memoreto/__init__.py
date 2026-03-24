@@ -1,10 +1,12 @@
 import os
+from flask_cors import CORS 
 from flask import Flask, request
 from markupsafe import escape #Evitar inyecciones de código en las rutas
 
 def create_app(test_config=None):
     # Inicializacion de la aplicacion Flask
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app) # Habilitar CORS para permitir solicitudes desde el frontend
     app.config.from_mapping(
         # a default secret that should be overridden by instance config
         SECRET_KEY="dev",
@@ -26,12 +28,11 @@ def create_app(test_config=None):
     @app.route("/docs/validausuario", methods=['GET'])
     def docs_valida_usuario():
         return {
-            "nombre": "Validación de usuario",
-            "descripcion": "Este servicio permite validar si un usuario estudiante o docente ya ha sido registrado previamente y sus credenciales son correctas.",
-            "url": "/validausuario",
-            "metodo_http": "POST",
-            "parametros_entrada": {"usuario": "alumnoabc@tec.mx", "pass": "12345678"},
-            "parametros_salida": {"valido": True, "id_usuario": 10, "rol": "estudiante"}
+            "usuario": "alumnoabc@tec.mx", 
+            "pass": "12345678",
+            "valido": True, 
+            "id_usuario": 10, 
+            "rol": "estudiante"
         }
 
     # ---  Funcionalidad de validación de usuario POST ---
