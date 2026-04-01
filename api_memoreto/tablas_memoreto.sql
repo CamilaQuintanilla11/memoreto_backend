@@ -61,7 +61,7 @@ INSERT INTO Niveles (nombre_nivel, dificultad) VALUES
 ('Nivel Intermedio', 2);
 
 -- Datos de prueba para Memoretos
-INSERT INTO Memoretos (nivel_dificultad, nombre_memoreto, descripcion, figuras, intersecciones) VALUES 
+INSERT INTO Memoretos (id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
 (1, 'Memoreto 1', 'Dificultad baja', '[1,2]', '[0]'),
 (2, 'Memoreto 2', 'Dificultad media', '[3,4]', '[1,2]');
 
