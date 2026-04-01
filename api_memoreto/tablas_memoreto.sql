@@ -13,11 +13,12 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Memoretos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nivel_dificultad INTEGER NOT NULL,
+    id_nivel INTEGER NOT NULL,
     nombre_memoreto TEXT NOT NULL,
     descripcion TEXT NOT NULL,
-    figuras TEXT NOT NULL,
-    intersecciones TEXT NOT NULL
+    figuras_json TEXT NOT NULL,
+    intersecciones_json TEXT NOT NULL,
+    FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
 );
 
 CREATE TABLE Niveles (
