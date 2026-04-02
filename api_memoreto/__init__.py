@@ -24,31 +24,93 @@ def create_app(test_config=None):
 
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
+
+    #USUARIO !!
     
     # --- ENDPOINT 1: Validación de usuario GET ---
     @app.route("/docs/validausuario", methods=['GET'])
-    def docs_valida_usuario():
-        return {
-            "usuario": "alumnoabc@tec.mx", 
-            "pass": "12345678",
-            "valido": True, 
-            "id_usuario": 10, 
-            "rol": "estudiante"
-        }
+    def docs_valida_usuario(token):
+        data = request.get_json()
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id FROM Usuario WHERE token = ?
+        """, (data["token"],))
+        user = cursor.fetchone()
+        conn.commit()
+        conn.close()
+        
+        if user:
+            return {"success": True, "id_usuario": user[0], "rol": user[1]}
+        else:
+            return {"success": False, "mensaje": "Credenciales inválidas"}
 
     # ---  Funcionalidad de validación de usuario POST ---
     @app.route("/validausuario", methods=['POST'])
     def valida_usuario():
-        return {"valido": True, "id_usuario": 10, "rol": "estudiante"}
-    
-    @app.route("/usuarios", methods=['PUT'])
-    def actualizar_usuario():
+        data = request.get_json()
+
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, rol FROM Usuario WHERE token = ?
+        """, (data["token"],))
+        user = cursor.fetchone()
+        conn.commit()
+        conn.close()
+
+        if user:
+            return {"success": True, "id_usuario": user[0], "rol": user[1]}
+        else:
+            return {"success": False, "mensaje": "Credenciales inválidas"}
+        
+
+    @app.route("/usuarios", methods=['POST'])
+    def crear_usuario():
+        data = request.get_json()
+
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO Usuario (name, token, rol)
+            VALUES (?,?,?)
+        """, (data["name"], data["token"], data["rol"]))
+        conn.commit()
+        conn.close()
+
+        return {"mensaje": "Usuario creado correctamente"}
+
+    @app.route("/usuarios/<int:id>", methods=['PUT'])
+    def actualizar_usuario(id):
+        data = request.get_json()
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Usuarios
+            SET name = ?
+            WHERE id = ?
+        """, (data["name"], id))
+        conn.commit()
+        conn.close()
+
         return {"mensaje": "Usuario actualizado correctamente"}
     
     @app.route("/usuarios/<id>", methods=['DELETE'])
     def eliminar_usuario(id):
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM Usuario
+            WHERE id = ?
+        """, (id,))
+        conn.commit()
+        conn.close()
+
         return {"mensaje": "Usuario eliminado correctamente"}
 
+    #SESSION !!
     # --- ENDPOINT 2: Crear puntaje POST ---
     @app.route("/puntajes", methods=['POST'])  
     def crear_puntaje(): 
