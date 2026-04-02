@@ -122,20 +122,33 @@ def create_app(test_config=None):
     @app.route("/puntajes/<id>", methods=["PUT"]) 
     def actualizar_puntaje(id): # Recibe el id del puntaje desde la URL
         data = request.get_json() # Obtiene los datos que se enviaron en formato JSON desde el cliente
-        return {
-            "mensaje" : "Puntaje actualizado correctamente", # Devuelve un mensaje de confirmación
-            "id" : id,
-            "nuevo_valor" : data
-        }
+
+        conn = sqlite3.connect('db_memoreto.sqlite') # Conecta a la base de datos
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Session
+            SET score = ?
+            WHERE id = ?
+        """, (data["score"], id))
+        conn.commit()
+        conn.close()
+
+        return {"mensaje" : "Puntaje actualizado correctamente"}
     
 
     # --- ENDPOINT 6: Eliminar puntaje DELETE ---
     @app.route("/puntajes/<id>", methods=["DELETE"])
     def eliminar_puntaje(id): # Recibe el id del puntaje desde la URL
-        return {
-            "mensaje": "Puntaje eliminado correctamente",
-            "id": id # y devuelve un mensaje confirmando que el registro fue eliminado
-        }
+        conn = sqlite3.connect('db_memoreto.sqlite') 
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM Session
+            WHERE id = ?
+        """, (id,))
+        conn.commit()
+        conn.close()
+        
+        return {"mensaje": "Puntaje eliminado correctamente"}
 
     # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
     @app.route("/api/graficas", methods=['GET'])
