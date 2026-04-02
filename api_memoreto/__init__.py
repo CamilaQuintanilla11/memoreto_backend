@@ -266,6 +266,29 @@ def create_app(test_config=None):
         else:
             return {"success": False, "mensaje": "Memoreto no encontrado"}
         
+    #ENDPOINT: obtener lista de memoretos por nivel GET
+    @app.route("/niveles/<int:id_nivel>/memoretos", methods=['GET'])
+    def obtener_memoretos_por_nivel(id_nivel):
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, nombre_memoreto, descripcion
+            FROM Memoreto
+            WHERE id_nivel = ?
+        """, (id_nivel,))
+        memoreto = cursor.fetchall()
+        conn.close()
+
+        memoreto_lista = []
+        for fila in memoreto:
+            memoreto_lista.append({
+                "id": fila[0],
+                "nombre_memoreto": fila[1],
+                "descripcion": fila[2]
+            })
+
+        return {"success": True, "memoretos": memoreto_lista}
+        
     #ENDPOINT: POST memoretos
     #ENDPOINT: PUT memoretos
     #ENDPOINT: DELETE memoretos
