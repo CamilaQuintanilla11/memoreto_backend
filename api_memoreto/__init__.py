@@ -92,21 +92,30 @@ def create_app(test_config=None):
 
     @app.route("/retos/<int:id_reto>/puntajes", methods=['GET']) # corregir nombre ruta
     def consultar_puntajes_reto(id_reto):
-        return {"success": True,  
-        "id_reto": id_reto,
-        "historial": [
-        {
-            "id_partida": 9,
-            "id_usuario": 1,
-            "puntaje": 500,
-            "fecha": "23-02-26"
-            },
-        {   
-            "id_partida": 10,
-            "id_usuario": 4,
-            "puntaje": 900,
-            "fecha": "23-02-26"
-        }]} 
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_partida, id_usuario, score, fecha
+            FROM Memoretos
+            WHERE id_reto = ?
+            ORDER BY score DESC
+            LIMIT ?
+        """, (id_reto, request.args.get("limit", default=20, type=int)))
+        resultados = cursor.fetchall()
+        conn.close()    
+
+        historial = []
+        for fila in resultados:
+            historial.append({
+                "id_partida": fila[0],
+                "id_usuario": fila[1],
+                "puntaje": fila[2],
+                "fecha": fila[3]
+            })
+
+        return {"success": True, "historial": historial}
+
 
 
     # --- ENDPOINT 5: Actualizar puntaje PUT ---
