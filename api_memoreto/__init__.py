@@ -61,18 +61,32 @@ def create_app(test_config=None):
     # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---    
     @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre ruta
     def consultar_puntajes_usuario(id_usuario):
-
-        limit = request.args.get("limit", default=20, type=int)
         
-        return {"success": True,  
-        "id_usuario": id_usuario,
-        "historial": [
-        {
-            "id_partida": 1,
-            "id_reto": 10,
-            "puntaje": 100,
-            "fecha": "23-02-26"
-        }]} 
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_partida, id_reto, tiempo_segundos, score, fecha
+            FROM Session
+            WHERE id_usuario = ?
+            Order BY fecha DESC
+            LIMIT ?
+        """, (id_usuario, request.args.get("limit", default=20, type=int)))
+        resultados = cursor.fetchall()
+        conn.close()
+
+        historial = []
+        for fila in resultados:
+            historial.append({
+                "id_partida": fila[0],
+                "id_reto": fila[1],
+                "tiempo_segundos": fila[2],
+                "score": fila[3],
+                "fecha": fila[4]
+            })
+
+        return {"succes": True, "historial": historial}
+
 
     # --- ENDPOINT 4: Consulta de puntajes por reto GET ---
 
