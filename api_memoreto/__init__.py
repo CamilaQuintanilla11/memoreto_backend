@@ -217,6 +217,54 @@ def create_app(test_config=None):
         conn.close()
 
         return {"mensaje": "Puntaje eliminado correctamente"}
+    
+    #MEMORETO !!!
+    # ENDPOINT: obtener lista de memoretos GET
+    @app.route("/memoretos", methods=['GET'])
+    def obtener_memoretos():
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, id_nivel, nombre_memoreto, descripcion
+            FROM Memoreto
+        """)
+        memoreto = cursor.fetchall()
+        conn.close()
+        memoreto = []
+        for fila in memoreto:
+            memoreto.append({
+                "id": fila[0],
+                "id_nivel": fila[1],
+                "nombre_memoreto": fila[2],
+                "descripcion": fila[3]
+            })
+        return {"success": True, "memoretos": memoreto}
+    
+    #ENDPOINT: obtener memoreto por id GET
+    @app.route("/memoretos/<int:id>", methods= ['GET'])
+    def obtener_memoreto_por_id(id):
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, id_nivel, nombre_memoreto, descripcion
+            FROM Memoreto
+            WHERE id = ?
+        """, (id,))
+        memoreto = cursor.fetchone()
+        conn.close()
+
+        if memoreto:
+            return {
+                "success": True,
+                "memoreto": {
+                    "id": memoreto[0],
+                    "id_nivel": memoreto[1],
+                    "nombre_memoreto": memoreto[2],
+                    "descripcion": memoreto[3]
+                }
+            }
+        else:
+            return {"success": False, "mensaje": "Memoreto no encontrado"}
 
     # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
     @app.route("/api/graficas", methods=['GET'])
