@@ -30,6 +30,7 @@ CREATE TABLE Niveles (
 CREATE TABLE Session (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_usuario INTEGER NOT NULL,
+    id_reto INTEGER NOT NULL,
     id_nivel INTEGER NOT NULL,         
     score INTEGER NOT NULL,            
     tiempo_segundos INTEGER NOT NULL,  
@@ -37,7 +38,8 @@ CREATE TABLE Session (
     errores INTEGER DEFAULT 0,         
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
-    FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
+    FOREIGN KEY (id_nivel) REFERENCES Niveles(id),
+    FOREIGN KEY (id_reto) REFERENCES Memoretos(id)
 );
 
 CREATE TABLE Session_has_memoreto (
