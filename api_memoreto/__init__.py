@@ -29,14 +29,13 @@ def create_app(test_config=None):
 
     @app.route("/usuarios/<int:id>", methods=['GET'])
     def obtener_usuario(id):
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, name, rol 
             FROM Usuario
             WHERE id = ?
-        """, (id))
+        """, (id,))
         user = cursor.fetchone()
         conn.close()
 
@@ -95,7 +94,7 @@ def create_app(test_config=None):
 
         return {"mensaje": "Usuario actualizado correctamente"}
     
-    @app.route("/usuarios/<id>", methods=['DELETE'])
+    @app.route("/usuarios/<int:id>", methods=['DELETE'])
     def eliminar_usuario(id):
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
@@ -146,7 +145,7 @@ def create_app(test_config=None):
         historial = []
         for fila in resultados:
             historial.append({
-                "id_usuario": fila[0],
+                "id_session": fila[0],
                 "id_reto": fila[1],
                 "id_nivel": fila[2],
                 "tiempo_segundos": fila[3],
@@ -154,7 +153,7 @@ def create_app(test_config=None):
                 "fecha": fila[5]
             })
 
-        return {"succes": True, "historial": historial}
+        return {"success": True, "historial": historial}
 
 
     # --- ENDPOINT 4: Consulta de puntajes por reto GET ---
@@ -177,9 +176,9 @@ def create_app(test_config=None):
         historial = []
         for fila in resultados:
             historial.append({
-                "id_partida": fila[0],
+                "id_session": fila[0],
                 "id_usuario": fila[1],
-                "puntaje": fila[2],
+                "score": fila[2],
                 "fecha": fila[3]
             })
 
@@ -188,7 +187,7 @@ def create_app(test_config=None):
 
 
     # --- ENDPOINT 5: Actualizar puntaje PUT ---
-    @app.route("/puntajes/<id>", methods=["PUT"]) 
+    @app.route("/puntajes/<int:id>", methods=["PUT"]) 
     def actualizar_puntaje(id): # Recibe el id del puntaje desde la URL
         data = request.get_json() # Obtiene los datos que se enviaron en formato JSON desde el cliente
 
