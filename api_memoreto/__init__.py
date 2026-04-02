@@ -26,25 +26,6 @@ def create_app(test_config=None):
     os.makedirs(app.instance_path, exist_ok=True)
 
     #USUARIO !!
-    
-    # --- ENDPOINT 1: Validación de usuario GET ---
-    @app.route("/docs/validausuario", methods=['GET'])
-    def docs_valida_usuario(token):
-        data = request.get_json()
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id FROM Usuario WHERE token = ?
-        """, (data["token"],))
-        user = cursor.fetchone()
-        conn.commit()
-        conn.close()
-        
-        if user:
-            return {"success": True, "id_usuario": user[0], "rol": user[1]}
-        else:
-            return {"success": False, "mensaje": "Credenciales inválidas"}
 
     # ---  Funcionalidad de validación de usuario POST ---
     @app.route("/validausuario", methods=['POST'])
@@ -88,7 +69,7 @@ def create_app(test_config=None):
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
         cursor.execute("""
-            UPDATE Usuarios
+            UPDATE Usuario
             SET name = ?
             WHERE id = ?
         """, (data["name"], id))
@@ -120,9 +101,9 @@ def create_app(test_config=None):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO Session (id_usuario, id_reto, tiempo_segundos, score, aciertos, errores)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (data["id_usuario"], data["id_reto"], data["tiempo_segundos"], data["score"], data.get("aciertos"), data.get("errores")))
+            INSERT INTO Session (id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (data["id_usuario"], data["id_nivel"], data["id_reto"], data["tiempo_segundos"], data["score"], data.get("aciertos"), data.get("errores")))
         conn.commit()
         conn.close()
         return {"success": True,"mensaje": "Puntaje guardado"}
@@ -136,7 +117,7 @@ def create_app(test_config=None):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id_partida, id_reto, tiempo_segundos, score, fecha
+            SELECT id, id_reto, id_nivel, tiempo_segundos, score, fecha
             FROM Session
             WHERE id_usuario = ?
             Order BY fecha DESC
@@ -148,11 +129,12 @@ def create_app(test_config=None):
         historial = []
         for fila in resultados:
             historial.append({
-                "id_partida": fila[0],
+                "id_usuario": fila[0],
                 "id_reto": fila[1],
-                "tiempo_segundos": fila[2],
-                "score": fila[3],
-                "fecha": fila[4]
+                "id_nivel": fila[2],
+                "tiempo_segundos": fila[3],
+                "score": fila[4],
+                "fecha": fila[5]
             })
 
         return {"succes": True, "historial": historial}
@@ -166,8 +148,8 @@ def create_app(test_config=None):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id_partida, id_usuario, score, fecha
-            FROM Memoretos
+            SELECT id, id_usuario, score, fecha
+            FROM Session
             WHERE id_reto = ?
             ORDER BY score DESC
             LIMIT ?
