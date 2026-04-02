@@ -41,6 +41,14 @@ def create_app(test_config=None):
     def valida_usuario():
         return {"valido": True, "id_usuario": 10, "rol": "estudiante"}
     
+    @app.route("/usuarios", methods=['PUT'])
+    def actualizar_usuario():
+        return {"mensaje": "Usuario actualizado correctamente"}
+    
+    @app.route("/usuarios/<id>", methods=['DELETE'])
+    def eliminar_usuario(id):
+        return {"mensaje": "Usuario eliminado correctamente"}
+
     # --- ENDPOINT 2: Crear puntaje POST ---
     @app.route("/puntajes", methods=['POST'])  
     def crear_puntaje(): 
@@ -147,7 +155,7 @@ def create_app(test_config=None):
         """, (id,))
         conn.commit()
         conn.close()
-        
+
         return {"mensaje": "Puntaje eliminado correctamente"}
 
     # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
