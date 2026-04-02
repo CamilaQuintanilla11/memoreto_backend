@@ -265,6 +265,17 @@ def create_app(test_config=None):
             }
         else:
             return {"success": False, "mensaje": "Memoreto no encontrado"}
+        
+    #ENDPOINT: POST memoretos
+    #ENDPOINT: PUT memoretos
+    #ENDPOINT: DELETE memoretos
+
+
+    #ENDPOINT: obtener lista de niveles GET
+    #ENDPOINT: obtener lista de memoretos por nivel GET
+    #ENDPOINT: POST niveles
+    #ENDPOINT: PUT niveles
+    #ENDPOINT: DELETE niveles
 
     # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
     @app.route("/api/graficas", methods=['GET'])
