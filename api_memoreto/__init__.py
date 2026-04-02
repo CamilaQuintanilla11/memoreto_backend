@@ -27,6 +27,24 @@ def create_app(test_config=None):
 
     #USUARIO !!
 
+    @app.route("/usuarios/<int:id>", methods=['GET'])
+    def obtener_usuario(id):
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, rol 
+            FROM Usuario
+            WHERE id = ?
+        """, (id))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            return {"id": user[0], "name": user[1], "rol": user[2]}
+        else:
+            return {"error": "Usuario no encontrado"}
+
     # ---  Funcionalidad de validación de usuario POST ---
     @app.route("/validausuario", methods=['POST'])
     def valida_usuario():
@@ -39,7 +57,6 @@ def create_app(test_config=None):
             SELECT id, rol FROM Usuario WHERE token = ?
         """, (data["token"],))
         user = cursor.fetchone()
-        conn.commit()
         conn.close()
 
         if user:
