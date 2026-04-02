@@ -44,18 +44,18 @@ def create_app(test_config=None):
     # --- ENDPOINT 2: Crear puntaje POST ---
     @app.route("/puntajes", methods=['POST'])  
     def crear_puntaje(): 
-        return {"success": True,  
-        "id_usuario" : 10,
-        "id_reto": 1,
-        "tiempo_segundos": 1,
-        "mensaje": "Puntaje guardado",
-        "historial": [
-        {
-            "id_partida": 1,
-            "id_reto": 10,
-            "puntaje": 100,
-            "fecha": "23-02-26"
-        }]}
+        data = request.get_json()
+
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO Session (id_usuario, id_reto, tiempo_segundos, score, aciertos, errores)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (data["id_usuario"], data["id_reto"], data["tiempo_segundos"], data["score"], data.get("aciertos"), data.get("errores")))
+        conn.commit()
+        conn.close()
+        return {"success": True,"mensaje": "Puntaje guardado"}
 
 
     # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---    
