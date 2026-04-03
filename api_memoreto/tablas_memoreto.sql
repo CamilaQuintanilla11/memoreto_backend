@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS Session_has_memoreto;
 DROP TABLE IF EXISTS Session;
-DROP TABLE IF EXISTS Memoretos;
+DROP TABLE IF EXISTS Memoreto;
 DROP TABLE IF EXISTS Niveles;
 DROP TABLE IF EXISTS Usuario;
 
@@ -11,7 +11,7 @@ CREATE TABLE Usuario (
     rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
 );
 
-CREATE TABLE Memoretos (
+CREATE TABLE Memoreto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_nivel INTEGER NOT NULL,
     nombre_memoreto TEXT NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE Session (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
     FOREIGN KEY (id_nivel) REFERENCES Niveles(id),
-    FOREIGN KEY (id_reto) REFERENCES Memoretos(id)
+    FOREIGN KEY (id_reto) REFERENCES Memoreto(id)
 );
 
 CREATE TABLE Session_has_memoreto (
@@ -48,14 +48,14 @@ CREATE TABLE Session_has_memoreto (
     score INTEGER NOT NULL,          
     PRIMARY KEY (id_session, id_memoreto),
     FOREIGN KEY (id_session) REFERENCES Session(id),
-    FOREIGN KEY (id_memoreto) REFERENCES Memoretos(id)
+    FOREIGN KEY (id_memoreto) REFERENCES Memoreto(id)
 );
 
 -- Datos de prueba para Usuario
 INSERT INTO Usuario (name, token, rol) VALUES 
-('Aldo', 'token_aldo_1', 'estudiante'),
-('Maria', 'token_maria_2', 'estudiante'),
-('Profe Juan', 'token_profe_1', 'maestro');
+('Aldo', '84edde57740fd5953d62b720ccf5e8f4', 'estudiante'),
+('Maria', '683cf42782096456d4d64c2f9fe2f8cb', 'estudiante'),
+('Profe Juan', '9b776daefefc486d19b11472695985f3', 'maestro');
 
 -- Datos de prueba para Niveles
 INSERT INTO Niveles (nombre_nivel, dificultad) VALUES 
@@ -63,15 +63,34 @@ INSERT INTO Niveles (nombre_nivel, dificultad) VALUES
 ('Nivel Intermedio', 2);
 
 -- Datos de prueba para Memoretos
-INSERT INTO Memoretos (id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
-(1, 'Memoreto 1', 'Dificultad baja', '[1,2]', '[0]'),
-(2, 'Memoreto 2', 'Dificultad media', '[3,4]', '[1,2]');
+INSERT INTO Memoreto (id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
+(
+    1,
+    'Memoreto facil 3 circulos',
+    'Usa los números del 1 al 6 sin repetir. Todas las figuras deben sumar lo mismo.',
+    '[{"id":1,"center":[-1.0,0.9,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[1.0,0.9,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]},{"id":3,"center":[0,-0.4,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]}]',
+    '[]'
+),
+(
+    2,
+    'Memoreto medio rectangulos y circulo',
+    'Se han dibujado dos rectangulos y un circulo, generando 12 puntos de corte. Se pide ubicar alli los numeros del 1 al 12 para que los ubicados sobre cualquiera de las 3 figuras geometricas sumen siempre un mismo valor.',
+    '[{"id":1,"center":[0,0,0],"size":[6.4,6.4,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[0,0,0],"size":[5.8,2.8,0.1],"type":"square","rotation":[0,0,0]},{"id":3,"center":[0,0,0],"size":[2.8,5.8,0.1],"type":"square","rotation":[0,0,0]}]',
+    '[]'
+),
+(
+    3,
+    'Memoreto dificil prueba',
+    'En el grafico hay tres circulos y un triangulo. Se colocan numeros del 1 al 15 sin repetir para que las sumas en cada circunferencia y en cada lado del triangulo sean constantes.',
+    '[{"id":1,"center":[-1.9,0.9,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[1.9,0.9,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":3,"center":[0,-1.7,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":4,"center":[0,-0.2,0],"size":[4.5,4.2,0.1],"type":"triangle","rotation":[0,0,0]}]',
+    '[]'
+);
 
 -- Datos de prueba para Session
-INSERT INTO Session (id_usuario, id_nivel, score, tiempo_segundos, aciertos, errores) VALUES 
-(1, 1, 850, 120, 10, 2),
-(2, 1, 900, 95, 12, 0),
-(1, 2, 600, 200, 8, 5);
+INSERT INTO Session (id_usuario, id_reto, id_nivel, score, tiempo_segundos, aciertos, errores) VALUES 
+(1, 1, 1, 850, 120, 10, 2),
+(2, 1, 1, 900, 95, 12, 0),
+(1, 2, 2, 600, 200, 8, 5);
 
 -- Datos de prueba para Session_has_memoreto
 INSERT INTO Session_has_memoreto (id_session, id_memoreto, score) VALUES 

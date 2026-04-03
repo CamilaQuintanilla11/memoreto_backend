@@ -15,10 +15,10 @@ def inicializar_bd():
     # Inserta el usuario de prueba de su documentación (Endpoint 1)
     # Nota: En un proyecto real la contraseña iría encriptada (hash), 
     # pero para esta fase de pruebas la dejamos en texto plano.
-    cursor.execute("""
-        INSERT INTO usuario (correo, password, rol) 
-        VALUES ('alumnoabc@tec.mx', '12345678', 'estudiante')
-    """)
+    #cursor.execute("""
+    #    INSERT INTO usuario (correo, password, rol) 
+    #    VALUES ('alumnoabc@tec.mx', '12345678', 'estudiante')
+    #""")
     
     conexion.commit()
     conexion.close()

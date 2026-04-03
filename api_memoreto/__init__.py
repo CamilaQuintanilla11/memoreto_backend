@@ -1,7 +1,9 @@
 import os
 import sqlite3
+import json
+import random
+from flask import Flask, request, jsonify
 from flask_cors import CORS 
-from flask import Flask, request
 from markupsafe import escape #Evitar inyecciones de código en las rutas
 
 def create_app(test_config=None):
@@ -25,7 +27,54 @@ def create_app(test_config=None):
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
+    
+
     #USUARIO !!
+    @app.route("/memoreto", methods=["POST"])
+    def obtener_memoreto_jugable():
+        dificultad = request.form.get("dificultad")
+
+        if dificultad == "facil":
+            id_nivel = 1
+        elif dificultad == "medio":
+            id_nivel = 2
+        elif dificultad == "dificil":
+            id_nivel = 3
+        else:
+            return {"success": False, "mensaje": "Dificultad no válida"}, 400
+
+        db_path = os.path.join(os.path.dirname(__file__), "db_memoreto.sqlite")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json
+            FROM Memoreto
+            WHERE id_nivel = ?
+            ORDER BY RANDOM()
+            LIMIT 1
+        """, (id_nivel,))
+
+        fila = cursor.fetchone()
+        conn.close()
+
+        if not fila:
+            return {"success": False, "mensaje": "No hay memoretos para ese nivel"}, 404
+
+        figuras = json.loads(fila[4])
+        intersecciones = json.loads(fila[5])
+
+        memoreto = {
+            "id": fila[0],
+            "instruction": fila[3],
+            "shapes": figuras,
+            "intersections": intersecciones,
+            "level": fila[1]
+        }
+
+        return memoreto
+
+    
 
     @app.route("/usuarios/<int:id>", methods=['GET'])
     def obtener_usuario(id):
@@ -47,21 +96,30 @@ def create_app(test_config=None):
     # ---  Funcionalidad de validación de usuario POST ---
     @app.route("/validausuario", methods=['POST'])
     def valida_usuario():
-        data = request.get_json()
+        usuario = request.form.get("data1")
+        token = request.form.get("data2")
 
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id, rol FROM Usuario WHERE token = ?
-        """, (data["token"],))
+            SELECT id, name, rol, token
+            FROM Usuario 
+            WHERE name = ? AND token = ?
+        """, (usuario, token))
         user = cursor.fetchone()
         conn.close()
 
         if user:
-            return {"success": True, "id_usuario": user[0], "rol": user[1]}
+            return {
+                "succes":"True",
+                "id_usuario": user[0],
+                "name": user[1],
+                "rol": user[2],
+                "token": user[3]
+            }
         else:
-            return {"success": False, "mensaje": "Credenciales inválidas"}
+            return {"success": False, "mensaje": "Credenciales inválidas"}, 401
         
 
     @app.route("/usuarios", methods=['POST'])
@@ -330,8 +388,12 @@ def create_app(test_config=None):
             "tiempos": tiempos,
             "scores": scores
         }
+    
+    
 
     return app
+
+
 
 if __name__ == "__main__":
     app = create_app()
