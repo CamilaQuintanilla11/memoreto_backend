@@ -1,0 +1,11 @@
+# Ignorar entorno virtual
+venv/
+Scripts/
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.pyc
+
+# VSCode
+.vscode/
