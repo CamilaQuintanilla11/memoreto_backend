@@ -27,9 +27,8 @@ def create_app(test_config=None):
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
-    
 
-    #USUARIO !!
+    #ENDPOINT: POST memoretos
     @app.route("/memoreto", methods=["POST"])
     def obtener_memoreto_jugable():
         dificultad = request.form.get("dificultad")
@@ -73,8 +72,12 @@ def create_app(test_config=None):
         }
 
         return memoreto
-
     
+    #ENDPOINT: PUT memoretos
+    #ENDPOINT: DELETE memoretos
+    #ENDPOINT: obtener lista de memoretos por nivel GET
+
+    #USUARIO !!
 
     @app.route("/usuarios/<int:id>", methods=['GET'])
     def obtener_usuario(id):
@@ -347,9 +350,6 @@ def create_app(test_config=None):
 
         return {"success": True, "memoretos": memoreto_lista}
         
-    #ENDPOINT: POST memoretos
-    #ENDPOINT: PUT memoretos
-    #ENDPOINT: DELETE memoretos
 
 
     #ENDPOINT: obtener lista completa de niveles GET
@@ -375,7 +375,6 @@ def create_app(test_config=None):
 
         return {"success": True, "niveles": niveles_lista}
     
-    #ENDPOINT: obtener lista de memoretos por nivel GET
     #ENDPOINT: POST niveles
     #ENDPOINT: PUT niveles
     #ENDPOINT: DELETE niveles
