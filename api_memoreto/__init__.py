@@ -27,7 +27,9 @@ def create_app(test_config=None):
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
-
+    @app.route("/")
+    def home():
+        return jsonify({"success": True, "message": "API de Memoreto funcionando"})
     #ENDPOINT: POST memoretos
     @app.route("/memoretos", methods=["POST"])
     def obtener_memoreto_jugable():
