@@ -6,7 +6,7 @@ def inicializar_bd():
     cursor = conexion.cursor()
     
     # Lee el archivo SQL con las tablas
-    with open('tablas_memoreto.sql', 'r', encoding='utf-8') as archivo_sql:
+    with open("api_memoreto/tablas_memoreto.sql", "r", encoding="utf-8", errors="ignore") as archivo_sql:
         script = archivo_sql.read()
         
     # Ejecuta el script para crear las tablas
