@@ -27,9 +27,8 @@ def create_app(test_config=None):
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
-    
 
-    #USUARIO !!
+    #ENDPOINT: POST memoretos
     @app.route("/memoreto", methods=["POST"])
     def obtener_memoreto_jugable():
         dificultad = request.form.get("dificultad")
@@ -73,8 +72,12 @@ def create_app(test_config=None):
         }
 
         return memoreto
-
     
+    #ENDPOINT: PUT memoretos
+    #ENDPOINT: DELETE memoretos
+    #ENDPOINT: obtener lista de memoretos por nivel GET
+
+    #USUARIO !!
 
     @app.route("/usuarios/<int:id>", methods=['GET'])
     def obtener_usuario(id):
@@ -342,19 +345,53 @@ def create_app(test_config=None):
             memoreto_lista.append({
                 "id": fila[0],
                 "nombre_memoreto": fila[1],
-                "descripcion": fila[2]
+                "dificultad": fila[2]
             })
 
         return {"success": True, "memoretos": memoreto_lista}
         
-    #ENDPOINT: POST memoretos
-    #ENDPOINT: PUT memoretos
-    #ENDPOINT: DELETE memoretos
 
 
-    #ENDPOINT: obtener lista de niveles GET
-    #ENDPOINT: obtener lista de memoretos por nivel GET
+    #ENDPOINT: obtener lista completa de niveles GET
+    @app.route("/niveles", methods= ['GET'])
+    def obtener_niveles():
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, nombre_nivel, dificultad
+            FROM Niveles
+        """)
+        niveles = cursor.fetchall()
+        conn.close()
+
+        niveles_lista = []
+        for fila in niveles:
+            niveles_lista.append({
+                "id": fila[0],
+                "nombre_nivel": fila[1],
+                "dificultad": fila[2]
+            })
+
+        return {"success": True, "niveles": niveles_lista}
+    
     #ENDPOINT: POST niveles
+    @app.route("/niveles", methods=['POST'])
+    def crear_nivel():
+        data = request.get_json()
+        nombre_nivel = data.get("nombre_nivel")
+        dificultad = data.get("dificultad")
+
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO Niveles (nombre_nivel, dificultad)
+            VALUES (?, ?)
+        """, (nombre_nivel, dificultad))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "mensaje": "Nivel creado exitosamente"}
+
     #ENDPOINT: PUT niveles
     #ENDPOINT: DELETE niveles
 
