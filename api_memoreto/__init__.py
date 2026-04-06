@@ -376,6 +376,24 @@ def create_app(test_config=None):
         return {"success": True, "niveles": niveles_lista}
     
     #ENDPOINT: POST niveles
+    @app.route("/niveles", methods=['POST'])
+    def crear_nivel():
+        data = request.get_json()
+        nombre_nivel = data.get("nombre_nivel")
+        descripcion = data.get("descripcion")
+        dificultad = data.get("dificultad")
+
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO Niveles (nombre_nivel, descripcion, dificultad)
+            VALUES (?, ?, ?)
+        """, (nombre_nivel, descripcion, dificultad))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "mensaje": "Nivel creado exitosamente"}
+
     #ENDPOINT: PUT niveles
     #ENDPOINT: DELETE niveles
 
