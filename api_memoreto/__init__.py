@@ -345,7 +345,7 @@ def create_app(test_config=None):
             memoreto_lista.append({
                 "id": fila[0],
                 "nombre_memoreto": fila[1],
-                "descripcion": fila[2]
+                "dificultad": fila[2]
             })
 
         return {"success": True, "memoretos": memoreto_lista}
@@ -358,7 +358,7 @@ def create_app(test_config=None):
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, nombre_nivel, descripcion, dificultad
+            SELECT id, nombre_nivel, dificultad
             FROM Niveles
         """)
         niveles = cursor.fetchall()
@@ -369,8 +369,7 @@ def create_app(test_config=None):
             niveles_lista.append({
                 "id": fila[0],
                 "nombre_nivel": fila[1],
-                "descripcion": fila[2],
-                "dificultad": fila[3]
+                "dificultad": fila[2]
             })
 
         return {"success": True, "niveles": niveles_lista}
@@ -380,15 +379,14 @@ def create_app(test_config=None):
     def crear_nivel():
         data = request.get_json()
         nombre_nivel = data.get("nombre_nivel")
-        descripcion = data.get("descripcion")
         dificultad = data.get("dificultad")
 
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO Niveles (nombre_nivel, descripcion, dificultad)
-            VALUES (?, ?, ?)
-        """, (nombre_nivel, descripcion, dificultad))
+            INSERT INTO Niveles (nombre_nivel, dificultad)
+            VALUES (?, ?)
+        """, (nombre_nivel, dificultad))
         conn.commit()
         conn.close()
 
