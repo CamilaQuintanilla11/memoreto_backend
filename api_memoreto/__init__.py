@@ -352,7 +352,29 @@ def create_app(test_config=None):
     #ENDPOINT: DELETE memoretos
 
 
-    #ENDPOINT: obtener lista de niveles GET
+    #ENDPOINT: obtener lista completa de niveles GET
+    @app.route("/niveles", methods= ['GET'])
+    def obtener_niveles():
+        conn = sqlite3.connect('db_memoreto.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, nombre_nivel, descripcion, dificultad
+            FROM Niveles
+        """)
+        niveles = cursor.fetchall()
+        conn.close()
+
+        niveles_lista = []
+        for fila in niveles:
+            niveles_lista.append({
+                "id": fila[0],
+                "nombre_nivel": fila[1],
+                "descripcion": fila[2],
+                "dificultad": fila[3]
+            })
+
+        return {"success": True, "niveles": niveles_lista}
+    
     #ENDPOINT: obtener lista de memoretos por nivel GET
     #ENDPOINT: POST niveles
     #ENDPOINT: PUT niveles
