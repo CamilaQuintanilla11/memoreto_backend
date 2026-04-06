@@ -108,14 +108,14 @@ def create_app(test_config=None):
         cursor.execute("""
             SELECT id, name, rol, token
             FROM Usuario 
-            WHERE name = ? AND token = ?
+            WHERE correo = ? AND token = ?
         """, (usuario, token))
         user = cursor.fetchone()
         conn.close()
 
         if user:
             return {
-                "succes":"True",
+                "success":True,
                 "id_usuario": user[0],
                 "name": user[1],
                 "rol": user[2],
@@ -129,12 +129,33 @@ def create_app(test_config=None):
     def crear_usuario():
         data = request.get_json()
 
+        nombre = data.get("name")
+        correo = data.get("correo")
+        token = data.get("token")
+        rol = data.get("rol", "estudiante")
+
+        if not nombre or not correo or not token:
+            return {"success": False, "mensaje": "Faltan datos"}, 400
+
         conn = sqlite3.connect('db_memoreto.sqlite')
         cursor = conn.cursor()
+        
+        # revisar si ya existe el usuario o correo
         cursor.execute("""
-            INSERT INTO Usuario (name, token, rol)
-            VALUES (?,?,?)
-        """, (data["name"], data["token"], data["rol"]))
+            SELECT id FROM Usuario
+            WHERE name = ? OR correo = ?
+        """, (nombre, correo))
+        existente = cursor.fetchone()
+
+        if existente:
+            conn.close()
+            return {"success": False, "mensaje": "El usuario o correo ya existe"}, 400
+
+        cursor.execute("""
+            INSERT INTO Usuario (name, correo, token, rol)
+            VALUES (?, ?, ?, ?)
+        """, (nombre, correo, token, rol))
+        
         conn.commit()
         conn.close()
 
@@ -194,7 +215,7 @@ def create_app(test_config=None):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, id_reto, id_nivel, tiempo_segundos, score, fecha
+            SELECT id, id_reto, id_nivel, tiempo_segundos, score, aciertos, errores, fecha
             FROM Session
             WHERE id_usuario = ?
             Order BY fecha DESC
@@ -211,7 +232,9 @@ def create_app(test_config=None):
                 "id_nivel": fila[2],
                 "tiempo_segundos": fila[3],
                 "score": fila[4],
-                "fecha": fila[5]
+                "aciertos": fila[5],
+                "errores": fila[6],
+                "fecha": fila[7]
             })
 
         return {"success": True, "historial": historial}

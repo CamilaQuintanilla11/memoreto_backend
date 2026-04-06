@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS Usuario;
 CREATE TABLE Usuario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    correo TEXT NOT NULL UNIQUE,
     token TEXT UNIQUE NOT NULL, 
     rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
 );
@@ -52,19 +53,22 @@ CREATE TABLE Session_has_memoreto (
 );
 
 -- Datos de prueba para Usuario
-INSERT INTO Usuario (name, token, rol) VALUES 
-('Aldo', '84edde57740fd5953d62b720ccf5e8f4', 'estudiante'),
-('Maria', '683cf42782096456d4d64c2f9fe2f8cb', 'estudiante'),
-('Profe Juan', '9b776daefefc486d19b11472695985f3', 'maestro');
+INSERT INTO Usuario (name, correo, token, rol) VALUES 
+('Aldo', 'aldo@mail.com', '84edde57740fd5953d62b720ccf5e8f4', 'estudiante'),
+('Maria', 'maria@mail.com', '683cf42782096456d4d64c2f9fe2f8cb', 'estudiante'),
+('Profe Juan', 'profejuan@mail.com', '9b776daefefc486d19b11472695985f3', 'maestro');
 
 -- Datos de prueba para Niveles
 INSERT INTO Niveles (nombre_nivel, dificultad) VALUES 
 ('Nivel Basico', 1),
-('Nivel Intermedio', 2);
+('Nivel Intermedio', 2),
+('Nivel Dificil', 3);
 
 -- Datos de prueba para Memoretos
-INSERT INTO Memoreto (id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
+-- Datos de prueba para Memoretos con ID manual
+INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
 (
+    1,
     1,
     'Memoreto facil 3 circulos',
     'Usa los números del 1 al 6 sin repetir. Todas las figuras deben sumar lo mismo.',
@@ -73,16 +77,31 @@ INSERT INTO Memoreto (id_nivel, nombre_memoreto, descripcion, figuras_json, inte
 ),
 (
     2,
+    2,
     'Memoreto medio rectangulos y circulo',
-    'Se han dibujado dos rectangulos y un circulo, generando 12 puntos de corte. Se pide ubicar alli los numeros del 1 al 12 para que los ubicados sobre cualquiera de las 3 figuras geometricas sumen siempre un mismo valor.',
+    'Se han dibujado dos rectangulos y un circulo, generando 12 puntos de corte...',
     '[{"id":1,"center":[0,0,0],"size":[6.4,6.4,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[0,0,0],"size":[5.8,2.8,0.1],"type":"square","rotation":[0,0,0]},{"id":3,"center":[0,0,0],"size":[2.8,5.8,0.1],"type":"square","rotation":[0,0,0]}]',
     '[]'
 ),
 (
+    4,
+    2,
+    'Memoreto medio elipse triangulo rectangulo',
+    'Se han dibujado una elipse, un triangulo y un rectangulo...',
+    '[{"id":1,"center":[0.0,-0.25,0],"size":[3.8,5.2,0.1],"type":"circle","rotation":[0,0,0]},
+    {"id":2,"center":[0.0,0.15,0],"size":[4.8,4.8,0.1],"type":"triangle","rotation":[0,0,0]},
+    {"id":3,"center":[0.0,-0.05,0],"size":[5.6,2.2,0.1],"type":"square","rotation":[0,0,0]}]',
+    '[]'
+),
+(
+    3,
     3,
     'Memoreto dificil prueba',
-    'En el grafico hay tres circulos y un triangulo. Se colocan numeros del 1 al 15 sin repetir para que las sumas en cada circunferencia y en cada lado del triangulo sean constantes.',
-    '[{"id":1,"center":[-1.9,0.9,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[1.9,0.9,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":3,"center":[0,-1.7,0],"size":[4.8,4.8,0.1],"type":"circle","rotation":[0,0,0]},{"id":4,"center":[0,-0.2,0],"size":[4.5,4.2,0.1],"type":"triangle","rotation":[0,0,0]}]',
+    'En el grafico hay tres circulos y un triangulo...',
+    '[{"id":1,"center":[-1.33,0.98,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
+    {"id":2,"center":[1.33,0.98,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
+    {"id":3,"center":[0,-0.84,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
+    {"id":4,"center":[0,0.21,0],"size":[3.15,2.94,0.1],"type":"triangle","rotation":[0,0,180]}]',
     '[]'
 );
 

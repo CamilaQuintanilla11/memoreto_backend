@@ -16,8 +16,8 @@ def inicializar_bd():
     # Nota: En un proyecto real la contraseña iría encriptada (hash), 
     # pero para esta fase de pruebas la dejamos en texto plano.
     #cursor.execute("""
-    #    INSERT INTO usuario (correo, password, rol) 
-    #    VALUES ('alumnoabc@tec.mx', '12345678', 'estudiante')
+     #   INSERT INTO usuario (correo, password, rol) 
+      #  VALUES ('alumnoabc@tec.mx', '12345678', 'estudiante')
     #""")
     
     conexion.commit()
