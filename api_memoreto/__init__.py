@@ -338,7 +338,8 @@ def create_app(test_config=None):
     # ENDPOINT: obtener lista de memoretos GET
     @app.route("/memoretos", methods=['GET'])
     def obtener_memoretos():
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        DB_PATH = os.path.join(os.path.dirname(__file__), "db_memoreto.sqlite")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, id_nivel, nombre_memoreto, descripcion
