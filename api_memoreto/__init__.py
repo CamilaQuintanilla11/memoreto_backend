@@ -543,27 +543,59 @@ def create_app(test_config=None):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
-        # Consulta SQL: Promedio de tiempo y puntaje por cada nivel
-        query = """
+        # 1. Consulta SQL: Promedio de tiempo y puntaje por cada nivel
+        cursor.execute("""
             SELECT n.nombre_nivel, AVG(s.tiempo_segundos) as prom_tiempo, AVG(s.score) as prom_score
             FROM Session s
             JOIN Niveles n ON s.id_nivel = n.id
             GROUP BY n.nombre_nivel
-        """
-        cursor.execute(query)
-        resultados = cursor.fetchall()
+        """)
+        resultados1 = cursor.fetchall()
+        # 2. aciertos vs errores (global) 
+        cursor.execute("""
+            SELECT AVG(aciertos) as prom_aciertos, AVG(errores) as prom_errores
+            FROM Session
+        """)
+        resultados2 = cursor.fetchone()
+        # 3. distribución de puntajes por nivel
+        cursor.execute("""
+            SELECT n.nombre_nivel, s.score
+            FROM Session s
+            JOIN Niveles n ON s.id_nivel = n.id
+        """)
+        resultados3 = cursor.fetchall()
+
         conn.close()
+
+        # 1. Promedios por nivel 
+        niveles = [fila[0] for fila in resultados1]
+        tiempos = [fila[1] for fila in resultados1]
+        scores = [fila[2] for fila in resultados1]
         
-        # Separar los resultados en listas para mandarlos a la web
-        niveles = [fila[0] for fila in resultados]
-        tiempos = [fila[1] for fila in resultados]
-        scores = [fila[2] for fila in resultados]
+        # 2. Aciertos vs errores
+        prom_aciertos = resultados2[0]
+        prom_errores = resultados2[1]
         
+        # 3. Distribución de puntajes por nivel
+        distribucion = []
+        for fila in resultados3:
+            distribucion.append({
+                "nivel": fila[0],
+                "score": fila[1]
+            })
+
         return jsonify({
             "success": True,
-            "niveles": niveles,
-            "tiempos": tiempos,
-            "scores": scores
+            "promedios_por_nivel": {
+                "niveles": niveles,
+                "tiempos": tiempos,
+                "scores": scores
+            },
+            "aciertos_vs_errores": {
+                "prom_aciertos": prom_aciertos,
+                "prom_errores": prom_errores
+            },
+            "distribucion_puntajes": distribucion  
         })
     
     return app
