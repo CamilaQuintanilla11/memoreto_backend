@@ -249,14 +249,13 @@ def create_app(test_config=None):
 
         id_usuario = request.args.get("id_usuario", type=int)
         id_reto = request.args.get("id_reto", type=int)
+        limit = request.args.get("limit", default=20, type=int)
 
         query = """
             SELECT id, id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores, fecha
             FROM Session
             WHERE 1=1
-            ORDER BY fecha DESC
-            LIMIT ?
-        """, 
+        """ 
         params = []
 
         if id_usuario:
@@ -265,6 +264,9 @@ def create_app(test_config=None):
         if id_reto:
             query += " AND id_reto = ?"
             params.append(id_reto)
+
+        query += " ORDER BY fecha DESC LIMIT ?"
+        params.append(limit)
 
         cursor.execute(query, params)
         resultados = cursor.fetchall()
