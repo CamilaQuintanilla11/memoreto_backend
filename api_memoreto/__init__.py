@@ -241,7 +241,55 @@ def create_app(test_config=None):
         return jsonify({"success": True,"mensaje": "Puntaje guardado"})
 
 
-    # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---    
+    @app.route("/puntajes", methods=['GET'])
+    def consultar_puntajes():
+        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        id_usuario = request.args.get("id_usuario", type=int)
+        id_reto = request.args.get("id_reto", type=int)
+
+        query = """
+            SELECT id, id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores, fecha
+            FROM Session
+            WHERE 1=1
+            ORDER BY fecha DESC
+            LIMIT ?
+        """, 
+        params = []
+
+        if id_usuario:
+            query[0] += " AND id_usuario = ?"
+            params.append(id_usuario)
+        if id_reto:
+            query[0] += " AND id_reto = ?"
+            params.append(id_reto)
+
+        cursor.execute(query[0], params)
+        resultados = cursor.fetchall()
+        conn.close()
+
+        if not resultados:
+            return jsonify({"success": False, "mensaje": "No se encontraron puntajes"}), 404
+
+        historial = []
+        for fila in resultados:
+            historial.append({
+                "id": fila[0],
+                "id_usuario": fila[1],
+                "id_nivel": fila[2],
+                "id_reto": fila[3],
+                "tiempo_segundos": fila[4],
+                "score": fila[5],
+                "aciertos": fila[6],
+                "errores": fila[7],
+                "fecha": fila[8]
+            })
+
+        return jsonify({"success": True, "total_resultados": len(historial), "historial": historial})
+    
+    # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---
     @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre ruta
     def consultar_puntajes_usuario(id_usuario):
         
@@ -321,53 +369,7 @@ def create_app(test_config=None):
 
         return jsonify({"mensaje" : "Puntaje actualizado correctamente"})
     
-    @app.route("/puntajes", methods=['GET'])
-    def consultar_puntajes():
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
 
-        id_usuario = request.args.get("id_usuario", type=int)
-        id_reto = request.args.get("id_reto", type=int)
-
-        query = """
-            SELECT id, id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores, fecha
-            FROM Session
-            WHERE 1=1
-            ORDER BY fecha DESC
-            LIMIT ?
-        """, 
-        params = []
-
-        if id_usuario:
-            query[0] += " AND id_usuario = ?"
-            params.append(id_usuario)
-        if id_reto:
-            query[0] += " AND id_reto = ?"
-            params.append(id_reto)
-
-        cursor.execute(query[0], params)
-        resultados = cursor.fetchall()
-        conn.close()
-
-        if not resultados:
-            return jsonify({"success": False, "mensaje": "No se encontraron puntajes"}), 404
-
-        historial = []
-        for fila in resultados:
-            historial.append({
-                "id": fila[0],
-                "id_usuario": fila[1],
-                "id_nivel": fila[2],
-                "id_reto": fila[3],
-                "tiempo_segundos": fila[4],
-                "score": fila[5],
-                "aciertos": fila[6],
-                "errores": fila[7],
-                "fecha": fila[8]
-            })
-
-        return jsonify({"success": True, "total_resultados": len(historial), "historial": historial})
     # --- ENDPOINT 6: Eliminar puntaje DELETE ---
     @app.route("/puntajes/<int:id>", methods=["DELETE"])
     def eliminar_puntaje(id): # Recibe el id del puntaje desde la URL
