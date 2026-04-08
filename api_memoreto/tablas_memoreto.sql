@@ -43,15 +43,6 @@ CREATE TABLE Session (
     FOREIGN KEY (id_reto) REFERENCES Memoreto(id)
 );
 
-CREATE TABLE Session_has_memoreto (
-    id_session INTEGER NOT NULL,
-    id_memoreto INTEGER NOT NULL,
-    score INTEGER NOT NULL,          
-    PRIMARY KEY (id_session, id_memoreto),
-    FOREIGN KEY (id_session) REFERENCES Session(id),
-    FOREIGN KEY (id_memoreto) REFERENCES Memoreto(id)
-);
-
 -- Datos de prueba para Usuario
 INSERT INTO Usuario (name, correo, token, rol) VALUES 
 ('Aldo', 'aldo@mail.com', '84edde57740fd5953d62b720ccf5e8f4', 'estudiante'),
