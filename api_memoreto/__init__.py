@@ -260,13 +260,13 @@ def create_app(test_config=None):
         params = []
 
         if id_usuario:
-            query[0] += " AND id_usuario = ?"
+            query += " AND id_usuario = ?"
             params.append(id_usuario)
         if id_reto:
-            query[0] += " AND id_reto = ?"
+            query += " AND id_reto = ?"
             params.append(id_reto)
 
-        cursor.execute(query[0], params)
+        cursor.execute(query, params)
         resultados = cursor.fetchall()
         conn.close()
 
