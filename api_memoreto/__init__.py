@@ -652,6 +652,15 @@ def create_app(test_config=None):
                 "total_partidas": partidas_grupo
             }
         })
+    
+    @app.route("/debug/memoretos")
+    def debug_memoretos():
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM Memoreto")
+        data = cursor.fetchall()
+        conn.close()
+        return jsonify(data)
 
     return app
 
