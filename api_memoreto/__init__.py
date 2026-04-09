@@ -234,14 +234,16 @@ def create_app(test_config=None):
 
         if not data:
             return jsonify({"success": False, "mensaje": "No se recibieron datos JSON"}), 400
+            
+        correo = data.get("correo") or data.get("data1")
+        token = data.get("token") or data.get("data2")
+
         
-        correo = data.get("data1")
-        token = data.get("data2")
-
-
         if not correo or not token:
             return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
 
+        print("DATA COMPLETA:", data)
+        
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -253,7 +255,7 @@ def create_app(test_config=None):
 
         user = cursor.fetchone()
         conn.close()
-
+        
         if user:
             return jsonify({
                 "success": True,
@@ -264,6 +266,7 @@ def create_app(test_config=None):
             })
         else:
             return jsonify({"success": False, "mensaje": "Credenciales inválidas"}), 401
+        
 
     @app.route("/usuarios", methods=["POST"])
     def crear_usuario():
