@@ -74,7 +74,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     'Memoreto medio rectangulos y circulo',
     'Se han dibujado dos rectangulos y un circulo, generando 12 puntos de corte...',
     '[{"id":1,"center":[0,0,0],"size":[6.4,6.4,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[0,0,0],"size":[5.8,2.8,0.1],"type":"square","rotation":[0,0,0]},{"id":3,"center":[0,0,0],"size":[2.8,5.8,0.1],"type":"square","rotation":[0,0,0]}]',
-    '[]'
+    '[]',
     12
 ),
 (
@@ -85,7 +85,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     '[{"id":1,"center":[0.0,-0.25,0],"size":[3.8,5.2,0.1],"type":"circle","rotation":[0,0,0]},
     {"id":2,"center":[0.0,0.15,0],"size":[4.8,4.8,0.1],"type":"triangle","rotation":[0,0,0]},
     {"id":3,"center":[0.0,-0.05,0],"size":[5.6,2.2,0.1],"type":"square","rotation":[0,0,0]}]',
-    '[]'
+    '[]',
     13
 ),
 (
@@ -97,7 +97,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     {"id":2,"center":[1.33,0.98,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
     {"id":3,"center":[0,-0.84,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
     {"id":4,"center":[0,0.21,0],"size":[3.15,2.94,0.1],"type":"triangle","rotation":[0,0,180]}]',
-    '[]'
+    '[]',
     53
 );
 
