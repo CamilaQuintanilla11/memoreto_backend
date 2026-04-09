@@ -34,8 +34,9 @@ def create_app(test_config=None):
 
     @app.route("/memoretos", methods=["POST"])
     def obtener_memoreto_jugable():
-        dificultad = request.form.get("dificultad")
-        id_usuario = request.form.get("id_usuario")  # se recibe aunque ahorita no se use
+        data = request.get_json(silent= True)
+        dificultad = data.get("dificultad")
+        id_usuario = data.get("id_usuario")  # se recibe aunque ahorita no se use
 
         if not dificultad:
             return jsonify({"success": False, "mensaje": "Falta opción de 'dificultad'"}), 400
