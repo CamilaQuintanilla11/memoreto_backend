@@ -230,7 +230,10 @@ def create_app(test_config=None):
 
     @app.route("/validausuario", methods=["POST"])
     def valida_usuario():
-        data = request.get_json()
+        data = request.get_json(silent = True)
+
+        if not data:
+            return jsonify({"success": False, "mensaje": "No se recibieron datos JSON"}), 400
         
         correo = data.get("data1")
         token = data.get("data2")
