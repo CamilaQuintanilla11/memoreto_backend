@@ -19,6 +19,7 @@ CREATE TABLE Memoreto (
     descripcion TEXT NOT NULL,
     figuras_json TEXT NOT NULL,
     intersecciones_json TEXT NOT NULL,
+    valores_fichas INTEGER,
     FOREIGN KEY (id_nivel) REFERENCES Niveles(id)
 );
 

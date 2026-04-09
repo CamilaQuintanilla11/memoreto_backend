@@ -242,8 +242,6 @@ def create_app(test_config=None):
         if not correo or not token:
             return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
 
-        print("DATA COMPLETA:", data)
-        
         conn = get_db_connection()
         cursor = conn.cursor()
 
