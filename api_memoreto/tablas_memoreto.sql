@@ -10,6 +10,7 @@ CREATE TABLE Usuario (
     correo TEXT NOT NULL UNIQUE,
     token TEXT UNIQUE NOT NULL, 
     rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
+    grupo TEXT NOT NULL
 );
 
 CREATE TABLE Memoreto (

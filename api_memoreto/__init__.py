@@ -1,42 +1,44 @@
 import os
 import sqlite3
 import json
-import random
 from flask import Flask, request, jsonify
-from flask_cors import CORS 
-from markupsafe import escape #Evitar inyecciones de código en las rutas
+from flask_cors import CORS
 
 def create_app(test_config=None):
-    # Inicializacion de la aplicacion Flask
     app = Flask(__name__, instance_relative_config=True)
-    CORS(app) # Habilitar CORS para permitir solicitudes desde el frontend
+    CORS(app)
+
     app.config.from_mapping(
-        # a default secret that should be overridden by instance config
         SECRET_KEY="dev",
-        # store the database in the instance folder
-        # DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
     )
 
     if test_config is None:
-        # load the instance config, if it exists, when not testing
         app.config.from_pyfile("config.py", silent=True)
     else:
-        # load the test config if passed in
         app.config.update(test_config)
 
-    # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
+
+    def get_db_connection():
+        db_path = os.path.join(os.path.dirname(__file__), "db_memoreto.sqlite")
+        conn = sqlite3.connect(db_path)
+        return conn
 
     @app.route("/")
     def home():
         return jsonify({"success": True, "message": "API de Memoreto funcionando"})
-    #ENDPOINT: POST memoretos
+
+    # =========================
+    # MEMORETOS
+    # =========================
+
     @app.route("/memoretos", methods=["POST"])
     def obtener_memoreto_jugable():
-        data = request.get_json()
-        if not data or "dificultad" not in data:
-            return {"success": False, "mensaje": "Falta opción de 'dificultad'"}, 400
-        dificultad = data.get("dificultad")
+        dificultad = request.form.get("dificultad")
+        id_usuario = request.form.get("id_usuario")  # se recibe aunque ahorita no se use
+
+        if not dificultad:
+            return jsonify({"success": False, "mensaje": "Falta opción de 'dificultad'"}), 400
 
         if dificultad == "facil":
             id_nivel = 1
@@ -45,14 +47,13 @@ def create_app(test_config=None):
         elif dificultad == "dificil":
             id_nivel = 3
         else:
-            return {"success": False, "mensaje": "Dificultad no válida"}, 400
+            return jsonify({"success": False, "mensaje": "Dificultad no válida"}), 400
 
-        db_path = os.path.join(os.path.dirname(__file__), "db_memoreto.sqlite")
-        conn = sqlite3.connect(db_path)
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id, id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json
+            SELECT id, id_nivel, nombre_memoreto, descripcion, figuras_json, valores_fichas
             FROM Memoreto
             WHERE id_nivel = ?
             ORDER BY RANDOM()
@@ -63,93 +64,193 @@ def create_app(test_config=None):
         conn.close()
 
         if not fila:
-            return {"success": False, "mensaje": "No hay memoretos para ese nivel"}, 404
+            return jsonify({"success": False, "mensaje": "No hay memoretos para ese nivel"}), 404
 
-        figuras = json.loads(fila[4])
-        intersecciones = json.loads(fila[5])
+        figuras = json.loads(fila[4]) if fila[4] else []
 
         memoreto = {
             "id": fila[0],
-            "descripcion": fila[3],
+            "name": fila[2],
+            "instruction": fila[3],
             "shapes": figuras,
-            "intersections": intersecciones,
-            "level": fila[1]
+            "level": fila[1],
+            "valores_fichas": fila[5]
         }
 
-        return jsonify({"success": True, "memoreto": memoreto})
+        return jsonify({
+            "success": True,
+            "memoreto": memoreto
+        })
 
-    #ENDPOINT: PUT memoretos
+    @app.route("/memoretos", methods=["GET"])
+    def obtener_memoretos():
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, id_nivel, nombre_memoreto, descripcion
+            FROM Memoreto
+        """)
+
+        resultados = cursor.fetchall()
+        conn.close()
+
+        memoretos = []
+        for fila in resultados:
+            memoretos.append({
+                "id": fila[0],
+                "id_nivel": fila[1],
+                "nombre_memoreto": fila[2],
+                "descripcion": fila[3]
+            })
+
+        return jsonify({"success": True, "memoretos": memoretos})
+
+    @app.route("/memoretos/<int:id>", methods=["GET"])
+    def obtener_memoreto_por_id(id):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, id_nivel, nombre_memoreto, descripcion, figuras_json, valores_fichas
+            FROM Memoreto
+            WHERE id = ?
+        """, (id,))
+
+        memoreto = cursor.fetchone()
+        conn.close()
+
+        if not memoreto:
+            return jsonify({"success": False, "mensaje": "Memoreto no encontrado"}), 404
+
+        return jsonify({
+            "success": True,
+            "memoreto": {
+                "id": memoreto[0],
+                "id_nivel": memoreto[1],
+                "nombre_memoreto": memoreto[2],
+                "descripcion": memoreto[3],
+                "shapes": json.loads(memoreto[4]) if memoreto[4] else [],
+                "valores_fichas": memoreto[5]
+            }
+        })
+
     @app.route("/memoretos/<int:id>", methods=["PUT"])
     def actualizar_memoreto(id):
         data = request.get_json()
-        conn = sqlite3.connect('db_memoreto.sqlite')
+
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             UPDATE Memoreto
-            SET nombre_memoreto = ?, descripcion = ?, figuras_json = ?, intersecciones_json = ?, id_nivel = ?
+            SET nombre_memoreto = ?, descripcion = ?, figuras_json = ?, valores_fichas = ?, id_nivel = ?
             WHERE id = ?
-        """, (data["nombre_memoreto"], data["descripcion"], json.dumps(data.get("shapes", [])), json.dumps(data.get("intersections", [])), data["id_nivel"], id))
+        """, (
+            data["nombre_memoreto"],
+            data["descripcion"],
+            json.dumps(data.get("shapes", [])),
+            data.get("valores_fichas"),
+            data["id_nivel"],
+            id
+        ))
+
         conn.commit()
         conn.close()
 
-        return jsonify({"success": True,"mensaje": "Memoreto actualizado correctamente"})
-    #ENDPOINT: DELETE memoretos
+        return jsonify({"success": True, "mensaje": "Memoreto actualizado correctamente"})
+
     @app.route("/memoretos/<int:id>", methods=["DELETE"])
     def eliminar_memoreto(id):
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
-            DELETE FROM Memoreto 
+            DELETE FROM Memoreto
             WHERE id = ?
         """, (id,))
+
         conn.commit()
         conn.close()
 
-        return jsonify({"success": True,"mensaje": "Memoreto eliminado correctamente"})
+        return jsonify({"success": True, "mensaje": "Memoreto eliminado correctamente"})
 
-
-    #USUARIO !!
-
-    @app.route("/usuarios/<int:id>", methods=['GET'])
-    def obtener_usuario(id):
-        conn = sqlite3.connect('db_memoreto.sqlite')
+    @app.route("/niveles/<int:id_nivel>/memoretos", methods=["GET"])
+    def obtener_memoretos_por_nivel(id_nivel):
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
-            SELECT id, name, rol 
+            SELECT id, nombre_memoreto, descripcion, figuras_json, valores_fichas
+            FROM Memoreto
+            WHERE id_nivel = ?
+        """, (id_nivel,))
+
+        memoretos = cursor.fetchall()
+        conn.close()
+
+        memoreto_lista = []
+        for fila in memoretos:
+            memoreto_lista.append({
+                "id": fila[0],
+                "name": fila[1],
+                "instruction": fila[2],
+                "shapes": json.loads(fila[3]) if fila[3] else [],
+                "valores_fichas": fila[4]
+            })
+
+        return jsonify({"success": True, "memoretos": memoreto_lista})
+
+    # =========================
+    # USUARIOS
+    # =========================
+
+    @app.route("/usuarios/<int:id>", methods=["GET"])
+    def obtener_usuario(id):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, name, rol
             FROM Usuario
             WHERE id = ?
         """, (id,))
-        user = cursor.fetchone()
-        conn.close()
 
-        if user:
-            return jsonify({"id": user[0], "name": user[1], "rol": user[2]})
-        else:
-            return jsonify({"error": "Usuario no encontrado"})
-
-    # ---  Funcionalidad de validación de usuario POST ---
-    @app.route("/validausuario", methods=['POST'])
-    def valida_usuario():
-        data = request.get_json()
-        if not data or "correo" not in data or "token" not in data:
-            return jsonify({"success": False, "mensaje": "Faltan 'correo' o 'token'"}), 400
-        correo = data.get("correo")
-        token = data.get("token")
-
-        conn = sqlite3.connect('db_memoreto.sqlite')
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT id, name, rol, token
-            FROM Usuario 
-            WHERE correo = ? AND token = ?
-        """, (correo, token))
         user = cursor.fetchone()
         conn.close()
 
         if user:
             return jsonify({
-                "success":True,
+                "id": user[0],
+                "name": user[1],
+                "rol": user[2]
+            })
+        else:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+    @app.route("/validausuario", methods=["POST"])
+    def valida_usuario():
+        correo = request.form.get("data1")
+        token = request.form.get("data2")
+
+        if not correo or not token:
+            return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, name, rol, token
+            FROM Usuario
+            WHERE correo = ? AND token = ?
+        """, (correo, token))
+
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            return jsonify({
+                "success": True,
                 "id_usuario": user[0],
                 "name": user[1],
                 "rol": user[2],
@@ -157,9 +258,8 @@ def create_app(test_config=None):
             })
         else:
             return jsonify({"success": False, "mensaje": "Credenciales inválidas"}), 401
-        
 
-    @app.route("/usuarios", methods=['POST'])
+    @app.route("/usuarios", methods=["POST"])
     def crear_usuario():
         data = request.get_json()
 
@@ -171,10 +271,9 @@ def create_app(test_config=None):
         if not nombre or not correo or not token:
             return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
 
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # revisar si ya existe el usuario o correo
+
         cursor.execute("""
             SELECT id FROM Usuario
             WHERE name = ? OR correo = ?
@@ -189,62 +288,77 @@ def create_app(test_config=None):
             INSERT INTO Usuario (name, correo, token, rol)
             VALUES (?, ?, ?, ?)
         """, (nombre, correo, token, rol))
-        
+
         conn.commit()
         conn.close()
 
         return jsonify({"success": True, "mensaje": "Usuario creado correctamente"})
 
-    @app.route("/usuarios/<int:id>", methods=['PUT'])
+    @app.route("/usuarios/<int:id>", methods=["PUT"])
     def actualizar_usuario(id):
         data = request.get_json()
-        conn = sqlite3.connect('db_memoreto.sqlite')
+
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             UPDATE Usuario
             SET name = ?
             WHERE id = ?
         """, (data["name"], id))
+
         conn.commit()
         conn.close()
 
         return jsonify({"mensaje": "Usuario actualizado correctamente"})
-    
-    @app.route("/usuarios/<int:id>", methods=['DELETE'])
+
+    @app.route("/usuarios/<int:id>", methods=["DELETE"])
     def eliminar_usuario(id):
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             DELETE FROM Usuario
             WHERE id = ?
         """, (id,))
+
         conn.commit()
         conn.close()
 
         return jsonify({"mensaje": "Usuario eliminado correctamente"})
 
-    #SESSION !!
-    # --- ENDPOINT 2: Crear puntaje POST ---
-    @app.route("/puntajes", methods=['POST'])  
-    def crear_puntaje(): 
+    # =========================
+    # PUNTAJES / SESSION
+    # =========================
+
+    @app.route("/puntajes", methods=["POST"])
+    def crear_puntaje():
         data = request.get_json()
 
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             INSERT INTO Session (id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (data["id_usuario"], data["id_nivel"], data["id_reto"], data["tiempo_segundos"], data["score"], data.get("aciertos"), data.get("errores")))
+        """, (
+            data["id_usuario"],
+            data["id_nivel"],
+            data["id_reto"],
+            data["tiempo_segundos"],
+            data["score"],
+            data.get("aciertos", 0),
+            data.get("errores", 0)
+        ))
+
         conn.commit()
         conn.close()
-        return jsonify({"success": True,"mensaje": "Puntaje guardado"})
 
+        return jsonify({"success": True, "mensaje": "Puntaje guardado"})
 
-    @app.route("/puntajes", methods=['GET'])
+    @app.route("/puntajes", methods=["GET"])
     def consultar_puntajes():
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         id_usuario = request.args.get("id_usuario", type=int)
@@ -255,12 +369,13 @@ def create_app(test_config=None):
             SELECT id, id_usuario, id_nivel, id_reto, tiempo_segundos, score, aciertos, errores, fecha
             FROM Session
             WHERE 1=1
-        """ 
+        """
         params = []
 
         if id_usuario:
             query += " AND id_usuario = ?"
             params.append(id_usuario)
+
         if id_reto:
             query += " AND id_reto = ?"
             params.append(id_reto)
@@ -289,189 +404,59 @@ def create_app(test_config=None):
                 "fecha": fila[8]
             })
 
-        return jsonify({"success": True, "total_resultados": len(historial), "historial": historial})
-    
-    # --- ENDPOINT 3: Consulta de puntaje de usuario  GET ---
-    @app.route("/usuarios/<int:id_usuario>/puntajes", methods=['GET']) # corregir nombre ruta
-    def consultar_puntajes_usuario(id_usuario):
-        
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
+        return jsonify({
+            "success": True,
+            "total_resultados": len(historial),
+            "historial": historial
+        })
+
+    @app.route("/puntajes/<int:id>", methods=["PUT"])
+    def actualizar_puntaje(id):
+        data = request.get_json()
+
+        conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, id_reto, id_nivel, tiempo_segundos, score, aciertos, errores, fecha
-            FROM Session
-            WHERE id_usuario = ?
-            Order BY fecha DESC
-            LIMIT ?
-        """, (id_usuario, request.args.get("limit", default=20, type=int)))
-        resultados = cursor.fetchall()
-        conn.close()
 
-        historial = []
-        for fila in resultados:
-            historial.append({
-                "id_session": fila[0],
-                "id_reto": fila[1],
-                "id_nivel": fila[2],
-                "tiempo_segundos": fila[3],
-                "score": fila[4],
-                "aciertos": fila[5],
-                "errores": fila[6],
-                "fecha": fila[7]
-            })
-
-        return jsonify({"success": True, "historial": historial})
-
-
-    # --- ENDPOINT 4: Consulta de puntajes por reto GET ---
-
-    @app.route("/retos/<int:id_reto>/puntajes", methods=['GET']) # corregir nombre ruta
-    def consultar_puntajes_reto(id_reto):
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, id_usuario, score, fecha
-            FROM Session
-            WHERE id_reto = ?
-            ORDER BY score DESC
-            LIMIT ?
-        """, (id_reto, request.args.get("limit", default=20, type=int)))
-        resultados = cursor.fetchall()
-        conn.close()    
-
-        historial = []
-        for fila in resultados:
-            historial.append({
-                "id_session": fila[0],
-                "id_usuario": fila[1],
-                "score": fila[2],
-                "fecha": fila[3]
-            })
-
-        return jsonify({"success": True, "historial": historial})
-
-
-
-    # --- ENDPOINT 5: Actualizar puntaje PUT ---
-    @app.route("/puntajes/<int:id>", methods=["PUT"]) 
-    def actualizar_puntaje(id): # Recibe el id del puntaje desde la URL
-        data = request.get_json() # Obtiene los datos que se enviaron en formato JSON desde el cliente
-
-        conn = sqlite3.connect('db_memoreto.sqlite') # Conecta a la base de datos
-        cursor = conn.cursor()
         cursor.execute("""
             UPDATE Session
             SET score = ?
             WHERE id = ?
         """, (data["score"], id))
+
         conn.commit()
         conn.close()
 
-        return jsonify({"mensaje" : "Puntaje actualizado correctamente"})
-    
+        return jsonify({"mensaje": "Puntaje actualizado correctamente"})
 
-    # --- ENDPOINT 6: Eliminar puntaje DELETE ---
     @app.route("/puntajes/<int:id>", methods=["DELETE"])
-    def eliminar_puntaje(id): # Recibe el id del puntaje desde la URL
-        conn = sqlite3.connect('db_memoreto.sqlite') 
+    def eliminar_puntaje(id):
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             DELETE FROM Session
             WHERE id = ?
         """, (id,))
+
         conn.commit()
         conn.close()
 
         return jsonify({"mensaje": "Puntaje eliminado correctamente"})
-    
-    #MEMORETO !!!
-    # ENDPOINT: obtener lista de memoretos GET
-    @app.route("/memoretos", methods=['GET'])
-    def obtener_memoretos():
-        DB_PATH = os.path.join(os.path.dirname(__file__), "db_memoreto.sqlite")
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, id_nivel, nombre_memoreto, descripcion
-            FROM Memoreto
-        """)
-        resultados = cursor.fetchall()
-        conn.close()
 
-        memoreto = []
-        for fila in resultados:
-            memoreto.append({
-                "id": fila[0],
-                "id_nivel": fila[1],
-                "nombre_memoreto": fila[2],
-                "descripcion": fila[3]
-            })
-        return jsonify({"success": True, "memoretos": memoreto})
-    
-    #ENDPOINT: obtener memoreto por id GET
-    @app.route("/memoretos/<int:id>", methods= ['GET'])
-    def obtener_memoreto_por_id(id):
-        conn = sqlite3.connect('db_memoreto.sqlite')
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, id_nivel, nombre_memoreto, descripcion
-            FROM Memoreto
-            WHERE id = ?
-        """, (id,))
-        memoreto = cursor.fetchone()
-        conn.close()
-    
-        if memoreto:
-            return jsonify({
-                "success": True,
-                "memoreto": {
-                    "id": memoreto[0],
-                    "id_nivel": memoreto[1],
-                    "nombre_memoreto": memoreto[2],
-                    "descripcion": memoreto[3]
-                }
-            })
-        else:
-            return jsonify({"success": False, "mensaje": "Memoreto no encontrado"})
-        
-    #ENDPOINT: obtener lista de memoretos por nivel GET
-    @app.route("/niveles/<int:id_nivel>/memoretos", methods=['GET'])
-    def obtener_memoretos_por_nivel(id_nivel):
-        conn = sqlite3.connect('db_memoreto.sqlite')
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, nombre_memoreto, descripcion, figuras_json, intersecciones_json
-            FROM Memoreto
-            WHERE id_nivel = ?
-        """, (id_nivel,))
-        memoreto = cursor.fetchall()
-        conn.close()
+    # =========================
+    # NIVELES
+    # =========================
 
-        memoreto_lista = []
-        for fila in memoreto:
-            memoreto_lista.append({
-                "id": fila[0],
-                "nombre_memoreto": fila[1],
-                "descripcion": fila[2],
-                "shapes": json.loads(fila[3]),
-                "intersections": json.loads(fila[4])
-            })
-
-        return jsonify({"success": True, "memoretos": memoreto_lista})
-        
-
-
-    #ENDPOINT: obtener lista completa de niveles GET
-    @app.route("/niveles", methods= ['GET'])
+    @app.route("/niveles", methods=["GET"])
     def obtener_niveles():
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             SELECT id, nombre_nivel, dificultad
             FROM Niveles
         """)
+
         niveles = cursor.fetchall()
         conn.close()
 
@@ -484,66 +469,72 @@ def create_app(test_config=None):
             })
 
         return jsonify({"success": True, "niveles": niveles_lista})
-    
-    #ENDPOINT: POST niveles
-    @app.route("/niveles", methods=['POST'])
+
+    @app.route("/niveles", methods=["POST"])
     def crear_nivel():
         data = request.get_json()
         nombre_nivel = data.get("nombre_nivel")
         dificultad = data.get("dificultad")
 
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             INSERT INTO Niveles (nombre_nivel, dificultad)
             VALUES (?, ?)
         """, (nombre_nivel, dificultad))
+
         conn.commit()
         conn.close()
 
         return jsonify({"success": True, "mensaje": "Nivel creado exitosamente"})
 
-    #ENDPOINT: PUT niveles
-    @app.route("/niveles/<int:id>", methods= ['PUT'])
+    @app.route("/niveles/<int:id>", methods=["PUT"])
     def actualizar_nivel(id):
         data = request.get_json()
         nombre_nivel = data.get("nombre_nivel")
         dificultad = data.get("dificultad")
 
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             UPDATE Niveles
             SET nombre_nivel = ?, dificultad = ?
             WHERE id = ?
         """, (nombre_nivel, dificultad, id))
+
         conn.commit()
         conn.close()
 
         return jsonify({"success": True, "mensaje": "Nivel actualizado exitosamente"})
-    #ENDPOINT: DELETE niveles
-    @app.route("/niveles/<int:id>", methods= ['DELETE'])
+
+    @app.route("/niveles/<int:id>", methods=["DELETE"])
     def eliminar_nivel(id):
-        conn = sqlite3.connect('db_memoreto.sqlite')
+        conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("""
             DELETE FROM Niveles
             WHERE id = ?
         """, (id,))
+
         conn.commit()
         conn.close()
 
         return jsonify({"success": True, "mensaje": "Nivel eliminado exitosamente"})
 
-    # --- ENDPOINT 7: Datos para el Dashboard (Gráficas) ---
-    @app.route("/api/graficas", methods=['GET'])
+    # =========================
+    # DASHBOARD
+    # =========================
+
+    @app.route("/api/graficas", methods=["GET"])
     def obtener_datos_graficas():
-        # Conectar a la base de datos (busca el archivo en esta misma carpeta)
-        db_path = os.path.join(os.path.dirname(__file__), 'db_memoreto.sqlite')
-        conn = sqlite3.connect(db_path)
+        conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # 1. Consulta SQL: Promedio de tiempo y puntaje por cada nivel
+
+        grupo = request.args.get("grupo")
+
         cursor.execute("""
             SELECT n.nombre_nivel, AVG(s.tiempo_segundos) as prom_tiempo, AVG(s.score) as prom_score
             FROM Session s
@@ -551,13 +542,13 @@ def create_app(test_config=None):
             GROUP BY n.nombre_nivel
         """)
         resultados1 = cursor.fetchall()
-        # 2. aciertos vs errores (global) 
+
         cursor.execute("""
             SELECT AVG(aciertos) as prom_aciertos, AVG(errores) as prom_errores
             FROM Session
         """)
         resultados2 = cursor.fetchone()
-        # 3. distribución de puntajes por nivel
+
         cursor.execute("""
             SELECT n.nombre_nivel, s.score
             FROM Session s
@@ -565,24 +556,44 @@ def create_app(test_config=None):
         """)
         resultados3 = cursor.fetchall()
 
+        cursor.execute("""
+            SELECT grupo, 
+                    AVG(score) as prom_score, AVG(tiempo_segundos) as prom_tiempo,
+                    COUNT(*) as total_jugadas
+            FROM Session s
+            JOIN Usuario u ON s.id_usuario = u.id
+            WHERE u.grupo IS NOT NULL
+            AND (? IS NULL OR u.grupo = ?)
+            GROUP BY grupo
+        """) (grupo, grupo)
+        resultados4 = cursor.fetchall()
+
         conn.close()
 
-        # 1. Promedios por nivel 
         niveles = [fila[0] for fila in resultados1]
         tiempos = [fila[1] for fila in resultados1]
         scores = [fila[2] for fila in resultados1]
-        
-        # 2. Aciertos vs errores
-        prom_aciertos = resultados2[0]
-        prom_errores = resultados2[1]
-        
-        # 3. Distribución de puntajes por nivel
+
+        prom_aciertos = resultados2[0] if resultados2 else 0
+        prom_errores = resultados2[1] if resultados2 else 0
+
         distribucion = []
         for fila in resultados3:
             distribucion.append({
                 "nivel": fila[0],
                 "score": fila[1]
             })
+        
+        grupos = []
+        promedios_grupo = []
+        tiempos_grupo = []
+        partidas_grupo = []
+
+        for fila in resultados4:
+            grupos.append(fila[0])
+            promedios_grupo.append(fila[1])
+            tiempos_grupo.append(fila[2])
+            partidas_grupo.append(fila[3])
 
         return jsonify({
             "success": True,
@@ -595,11 +606,17 @@ def create_app(test_config=None):
                 "prom_aciertos": prom_aciertos,
                 "prom_errores": prom_errores
             },
-            "distribucion_puntajes": distribucion  
-        })
-    
-    return app
+            "distribucion_puntajes": distribucion,
 
+            "rendimiento_por_grupo": {
+                "grupos": grupos,
+                "promedios_score": promedios_grupo,
+                "promedios_tiempo": tiempos_grupo,
+                "total_partidas": partidas_grupo
+            }
+        })
+
+    return app
 
 
 if __name__ == "__main__":
