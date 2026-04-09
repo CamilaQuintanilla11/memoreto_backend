@@ -557,15 +557,15 @@ def create_app(test_config=None):
         resultados3 = cursor.fetchall()
 
         cursor.execute("""
-            SELECT grupo, 
+            SELECT u.grupo, 
                     AVG(score) as prom_score, AVG(tiempo_segundos) as prom_tiempo,
                     COUNT(*) as total_jugadas
             FROM Session s
             JOIN Usuario u ON s.id_usuario = u.id
             WHERE u.grupo IS NOT NULL
             AND (? IS NULL OR u.grupo = ?)
-            GROUP BY grupo
-        """) (grupo, grupo)
+            GROUP BY u.grupo
+        """, (grupo, grupo))
         resultados4 = cursor.fetchall()
 
         conn.close()
