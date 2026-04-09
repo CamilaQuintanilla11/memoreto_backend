@@ -58,14 +58,15 @@ INSERT INTO Niveles (nombre_nivel, dificultad) VALUES
 
 -- Datos de prueba para Memoretos
 -- Datos de prueba para Memoretos con ID manual
-INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json) VALUES 
+INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, intersecciones_json, valores_fichas) VALUES 
 (
     1,
     1,
     'Memoreto facil 3 circulos',
     'Usa los números del 1 al 6 sin repetir. Todas las figuras deben sumar lo mismo.',
     '[{"id":1,"center":[-1.0,0.9,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[1.0,0.9,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]},{"id":3,"center":[0,-0.4,0],"size":[3.0,3.0,0.1],"type":"circle","rotation":[0,0,0]}]',
-    '[]'
+    '[]',
+    10
 ),
 (
     2,
@@ -74,6 +75,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     'Se han dibujado dos rectangulos y un circulo, generando 12 puntos de corte...',
     '[{"id":1,"center":[0,0,0],"size":[6.4,6.4,0.1],"type":"circle","rotation":[0,0,0]},{"id":2,"center":[0,0,0],"size":[5.8,2.8,0.1],"type":"square","rotation":[0,0,0]},{"id":3,"center":[0,0,0],"size":[2.8,5.8,0.1],"type":"square","rotation":[0,0,0]}]',
     '[]'
+    12
 ),
 (
     4,
@@ -84,6 +86,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     {"id":2,"center":[0.0,0.15,0],"size":[4.8,4.8,0.1],"type":"triangle","rotation":[0,0,0]},
     {"id":3,"center":[0.0,-0.05,0],"size":[5.6,2.2,0.1],"type":"square","rotation":[0,0,0]}]',
     '[]'
+    13
 ),
 (
     3,
@@ -95,6 +98,7 @@ INSERT INTO Memoreto (id, id_nivel, nombre_memoreto, descripcion, figuras_json, 
     {"id":3,"center":[0,-0.84,0],"size":[3.36,3.36,0.1],"type":"circle","rotation":[0,0,0]},
     {"id":4,"center":[0,0.21,0],"size":[3.15,2.94,0.1],"type":"triangle","rotation":[0,0,180]}]',
     '[]'
+    53
 );
 
 -- Datos de prueba para Session
