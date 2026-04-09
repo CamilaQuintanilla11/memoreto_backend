@@ -298,14 +298,43 @@ def create_app(test_config=None):
     def actualizar_usuario(id):
         data = request.get_json()
 
+        campo_actualizar = []
+        datos = []
+
+        if "name" in data:
+            campo_actualizar.append("name = ?")
+            datos.append(data["name"])
+        
+        if "correo" in data:
+            campo_actualizar.append("correo = ?")
+            datos.append(data["correo"])
+
+        if "token" in data:
+            campo_actualizar.append("token = ?")
+            datos.append(data["token"])
+
+        if "rol" in data:
+            campo_actualizar.append("rol = ?")
+            datos.append(data["rol"])
+
+        if "grupo" in data:
+            campo_actualizar.append("grupo = ?")
+            datos.append(data["grupo"])
+
+        if not campo_actualizar:
+            return jsonify({"success": False, "mensaje": "No hay datos para actualizar"}), 400
+
+        query = f"""
+            UPDATE Usuario
+            SET {', '.join(campo_actualizar)}
+            WHERE id = ?
+        """
+        datos.append(id)
+        
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
-            UPDATE Usuario
-            SET name = ?
-            WHERE id = ?
-        """, (data["name"], id))
+        cursor.execute(query, datos)
 
         conn.commit()
         conn.close()
