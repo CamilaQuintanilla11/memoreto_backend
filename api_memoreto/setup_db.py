@@ -13,7 +13,11 @@ def inicializar_bd():
     with open(sql_path, "r", encoding="utf-8", errors="ignore") as archivo_sql:
         script = archivo_sql.read()
 
-    cursor.executescript(script)
+    try:
+        cursor.executescript(script)
+    except Exception as e:
+        print("ERROR EN SQL:")
+        print(e)
 
     conexion.commit()
     conexion.close()

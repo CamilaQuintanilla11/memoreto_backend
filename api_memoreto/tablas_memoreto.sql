@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS Session_has_memoreto;
 DROP TABLE IF EXISTS Session;
 DROP TABLE IF EXISTS Memoreto;
 DROP TABLE IF EXISTS Niveles;
@@ -9,8 +8,8 @@ CREATE TABLE Usuario (
     name TEXT NOT NULL,
     correo TEXT NOT NULL UNIQUE,
     token TEXT UNIQUE NOT NULL, 
-    rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante'))
-    grupo TEXT NOT NULL
+    rol TEXT NOT NULL CHECK (rol IN ('maestro', 'estudiante')),
+    grupo TEXT 
 );
 
 CREATE TABLE Memoreto (
@@ -103,8 +102,3 @@ INSERT INTO Session (id_usuario, id_reto, id_nivel, score, tiempo_segundos, acie
 (2, 1, 1, 900, 95, 12, 0),
 (1, 2, 2, 600, 200, 8, 5);
 
--- Datos de prueba para Session_has_memoreto
-INSERT INTO Session_has_memoreto (id_session, id_memoreto, score) VALUES 
-(1, 1, 850),
-(2, 1, 900),
-(3, 2, 600);
