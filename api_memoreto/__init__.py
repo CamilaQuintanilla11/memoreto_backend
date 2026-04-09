@@ -267,6 +267,7 @@ def create_app(test_config=None):
         correo = data.get("correo")
         token = data.get("token")
         rol = data.get("rol", "estudiante")
+        grupo = data.get("grupo")
 
         if not nombre or not correo or not token:
             return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
@@ -285,9 +286,9 @@ def create_app(test_config=None):
             return jsonify({"success": False, "mensaje": "El usuario o correo ya existe"}), 400
 
         cursor.execute("""
-            INSERT INTO Usuario (name, correo, token, rol)
-            VALUES (?, ?, ?, ?)
-        """, (nombre, correo, token, rol))
+            INSERT INTO Usuario (name, correo, token, rol, grupo)
+            VALUES (?, ?, ?, ?, ?)
+        """, (nombre, correo, token, rol, grupo))
 
         conn.commit()
         conn.close()
