@@ -50,6 +50,10 @@ INSERT INTO Usuario (name, correo, token, rol) VALUES
 ('Maria', 'maria@mail.com', '683cf42782096456d4d64c2f9fe2f8cb', 'estudiante'),
 ('Profe Juan', 'profejuan@mail.com', '9b776daefefc486d19b11472695985f3', 'maestro');
 
+UPDATE Usuario SET token = '9d1ec50ba9ceb580b76d015dbd49c17e' WHERE correo = 'aldo@mail.com';
+UPDATE Usuario SET token = 'f8461b554d59b3014e8ff5165dc62fac' WHERE correo = 'maria@mail.com';
+UPDATE Usuario SET token = 'e0b8bee65288d5c15b0e83f515b030f4' WHERE correo = 'profejuan@mail.com';
+
 -- Datos de prueba para Niveles
 INSERT INTO Niveles (nombre_nivel, dificultad) VALUES 
 ('Nivel Basico', 1),
