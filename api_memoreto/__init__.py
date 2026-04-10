@@ -34,9 +34,15 @@ def create_app(test_config=None):
 
     @app.route("/memoretos", methods=["POST"])
     def obtener_memoreto_jugable():
-        data = request.get_json(silent= True)
-        dificultad = data.get("dificultad")
-        id_usuario = data.get("id_usuario")  # se recibe aunque ahorita no se use
+        data = request.get_json(silent=True)
+
+        if data:
+            dificultad = data.get("dificultad") or data.get("data1")
+            id_usuario = data.get("id_usuario") or data.get("data2")  #
+        else:
+            dificultad = request.form.get("dificultad") or request.form.get("data1")
+            id_usuario = request.form.get("id_usuario") or request.form.get("data2")    
+
 
         if not dificultad:
             return jsonify({"success": False, "mensaje": "Falta opción de 'dificultad'"}), 400
@@ -233,13 +239,14 @@ def create_app(test_config=None):
     def valida_usuario():
         data = request.get_json(silent = True)
 
-        if not data:
-            return jsonify({"success": False, "mensaje": "No se recibieron datos JSON"}), 400
-            
-        correo = data.get("correo") or data.get("data1")
-        token = data.get("token") or data.get("data2")
-
+        if data:
+            corre = data.get("correo") or data.get("data1")
+            token = data.get("token") or data.get("data2")
+        else:
+            correo = request.form.get("correo") or request.form.get("data1")
+            token = request.form.get("token") or request.form.get("data2")
         
+
         if not correo or not token:
             return jsonify({"success": False, "mensaje": "Faltan datos"}), 400
 
@@ -254,7 +261,7 @@ def create_app(test_config=None):
 
         user = cursor.fetchone()
         conn.close()
-        
+
         if user:
             return jsonify({
                 "success": True,
@@ -265,7 +272,6 @@ def create_app(test_config=None):
             })
         else:
             return jsonify({"success": False, "mensaje": "Credenciales inválidas"}), 401
-        
 
     @app.route("/usuarios", methods=["POST"])
     def crear_usuario():
@@ -603,7 +609,7 @@ def create_app(test_config=None):
             WHERE u.grupo IS NOT NULL
             AND (? IS NULL OR u.grupo = ?)
             GROUP BY u.grupo
-        """, (grupo, grupo))
+        """) (grupo, grupo)
         resultados4 = cursor.fetchall()
 
         conn.close()
@@ -653,15 +659,6 @@ def create_app(test_config=None):
                 "total_partidas": partidas_grupo
             }
         })
-    
-    @app.route("/debug/memoretos")
-    def debug_memoretos():
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Memoreto")
-        data = cursor.fetchall()
-        conn.close()
-        return jsonify(data)
 
     return app
 
